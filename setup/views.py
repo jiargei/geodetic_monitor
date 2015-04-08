@@ -16,7 +16,8 @@ from setup.models import SupoTarget
 from setup.models import SupoTask
 from setup.models import SupoMeasurement
 
-from setup.permissions import IsOwnerOrReadOnly, IsOwner, IsReadOnly
+from setup.permissions import IsOwnerOrReadOnly, IsOwner
+from setup.permissions import IsReadOnly, IsOwnerOrSuperUser
 
 from setup.serializers import ProjectSerializer
 from setup.serializers import TachyPositionSerializer
@@ -36,16 +37,33 @@ import serial
 
 class ProjectViewSet(viewsets.ModelViewSet):
     """
-    This vieset automatically provides 'list', 'create', 'retrieve',
-    'update' and 'destroy' actions.
+    This vieset automatically provides 
+
+    - 'list'
+    - 'create'
+    - 'retrieve'
+    - 'update'
+    - 'destroy' 
+
+    actions.
 
     """
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     permission_classes = (permissions.IsAuthenticated,
-                          IsOwner,
+                          IsOwnerOrSuperUser,
                           # permissions.AllowAny,
                          )
+
+    def get_queryset(self):
+        """
+        This view should return a list of all the projects
+        for the currently authenticated user.
+        """
+        if self.request.user.is_superuser:
+            return Project.objects.all()
+        
+        return Project.objects.filter(owner=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
