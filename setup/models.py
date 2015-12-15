@@ -1,20 +1,24 @@
+import datetime
+from django.contrib.auth.models import User
 from django.db import models
 
-from lib import geodetic
+from lib import CONSTANTS
 
-import datetime
 
 # Create your models here.
 
-class Project(models.Model):
-    name = models.CharField(max_length=50)
-    description = models.CharField(max_length=255, default='')
-    token = models.CharField(max_length=10, default='')
-    active = models.BooleanField(default=True)
-    owner = models.ForeignKey('auth.User', related_name='projects')
+
+class Membership(models.Model):
+    user = models.ForeignKey(User)
+    project = models.ForeignKey("Project", on_delete=models.CASCADE)
+    role = models.CharField(max_length=1,
+                            choices=CONSTANTS.USER_ROLE_CHOICES,
+                            default="u")
 
     def __unicode__(self):
-        return "%s - %s" % (self.token, self.name)
+        return "%s ist %s in %s" % (self.user,
+                                    dict(CONSTANTS.USER_ROLE_CHOICES).get(self.role),
+                                    self.project)
 
 
 class Coordinate(models.Model):
@@ -26,124 +30,129 @@ class Coordinate(models.Model):
         abstract = True
 
 
-class TachyPosition(models.Model):
+class TimeWindow(models.Model):
+    von = models.TimeField()
+    bis = models.TimeField()
+    frequency = models.DecimalField(default=10., decimal_places=2, max_digits=5)
+    day_of_week = models.CharField(max_length=7, default="1234567")
+
+    def __unicode__(self):
+        find_days = "["
+        for dow in self.day_of_week:
+            if "1" in dow:
+                find_days += "mo,"
+            elif "2" in dow:
+                find_days += "di,"
+            elif "3" in dow:
+                find_days += "mi,"
+            elif "4" in dow:
+                find_days += "do,"
+            elif "5" in dow:
+                find_days += "fr,"
+            elif "6" in dow:
+                find_days += "sa,"
+            elif "7" in dow:
+                find_days += "so,"
+        find_days += "]"
+        return "%s - %s an %s, %s min" % (self.von, self.bis, find_days, self.frequency)
+
+
+class Project(models.Model):
     name = models.CharField(max_length=50)
-    project = models.ForeignKey(Project,
-                                related_name="%(class)ss")
+    description = models.CharField(max_length=255, default='')
+    token = models.CharField(max_length=10, default='')
     active = models.BooleanField(default=True)
-    use_stable = models.BooleanField(default=True)
+    members = models.ManyToManyField(User, through=Membership)
 
     def __unicode__(self):
-        return "%s" % self.name
+        return "%s - %s" % (self.token, self.name)
 
 
-class TachyStation(Coordinate):
-    position = models.ForeignKey(TachyPosition, related_name="tachystations")
-    orientation = models.FloatField(default=0.0)
-    stable = models.BooleanField(default=True)
-
-    def polar_to_grid(self, hz, v, sd):
-        """
-        Haengt Beobachtung zu Zielpunkt an Standpunkt an
-        :param hz: Richtungswinkel zu Zielpunkt in GON
-        :type hz: float
-        :param v: Vertikalwinkel zu Zielpunkt in GON
-        :type v: float
-        :param sd: Schraegdistanz zu Zielpunkt
-        :type sd: float
-        :return: easting, northin, height
-        :rtype: dict
-        """
-        return geodetic.polar_to_grid(self.easting, self.northing, self.height,
-                                      hz, self.orientation, v, sd)
-
-    def __unicode__(self):
-        return "%s, %.4f" % (self.position, self.orientation)
-
-
-class TachyTarget(Coordinate):
-    project = models.ForeignKey(Project, 
-                                related_name="%(class)ss")
+class Position(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
     name = models.CharField(max_length=20)
-    PRISM_CHOICES = (
-        (1, 'Miniprisma'),
-        (7, 'Miniprisma 360'),
-    )
-    prism = models.PositiveSmallIntegerField(choices=PRISM_CHOICES,
-                                             default=1)
-
-    class Meta:
-        abstract = True
+    recent_sensor = models.ForeignKey("Sensor", blank=True, null=True, on_delete=models.SET_NULL)
 
     def __unicode__(self):
         return "%s" % self.name
 
 
-class FipoTarget(TachyTarget):
-    use_plane = models.BooleanField(default=True)
-    use_height = models.BooleanField(default=True)
+class Station(Coordinate):
+    name = models.CharField(max_length=30)
+    position = models.ForeignKey("Position", on_delete=models.CASCADE)
+    sensor = models.ForeignKey("Sensor", on_delete=models.SET_NULL, null=True, blank=True)
+    von = models.DateTimeField(default=datetime.datetime.now())
+    bis = models.DateTimeField(default=datetime.datetime.now())
+
+    def __unicode__(self):
+        return "%s (%s)" % (self.name, self.position.name)
 
 
-class SupoTarget(TachyTarget):
-    pass
+class Sensor(models.Model):
+    name = models.CharField(max_length=30)
+    serial_number = models.CharField(max_length=20)
+
+    def __unicode__(self):
+        return "%s (%s)" % (self.name, self.serial_number)
 
 
-class TachyTask(models.Model):
-    position = models.ForeignKey(TachyPosition, related_name="%(class)ss")
+class Target(Coordinate):
+    name = models.CharField(max_length=20)
+    target_type = models.CharField(default='d', max_length=1, choices=CONSTANTS.TARGET_TYPE_CHOICES)
+    prism_type = models.PositiveSmallIntegerField(choices=CONSTANTS.PRISM_CHOICES, default=1)
+    project = models.ForeignKey("Project", on_delete=models.CASCADE)
+
+    def __unicode__(self):
+        return "%s (%s)" % (self.name, dict(CONSTANTS.TARGET_TYPE_CHOICES).get(self.target_type))
+
+
+class Task(models.Model):
+    time_window = models.ForeignKey("TimeWindow")
+    position = models.ForeignKey("Position")
+    targets = models.ManyToManyField("Target")
     active = models.BooleanField(default=True)
-    from_time = models.TimeField(default=datetime.time(0, 0, 0))
-    to_time = models.TimeField(default=datetime.time(23, 59, 59))
-    frequency = models.FloatField(default=60.0)
-
-    class Meta:
-        abstract = True
-
-
-class FipoTask(TachyTask):
-    target = models.ForeignKey(FipoTarget, related_name="%(class)ss")
 
     def __unicode__(self):
-        return "%s -> %s, %.2f Minuten" % (self.position, self.target)
+        return "%s, %s, %s" % (self.position, self.targets, self.time_window)
 
 
-class SupoTask(TachyTask):
-    target = models.ForeignKey(SupoTarget, related_name="%(class)ss")
-
-    def __unicode__(self):
-        return "%s -> %s, %.2f Minuten" % (self.position, self.target)
-
-
-class TachyMeasurement(models.Model):
-    horizontal_angle = models.FloatField()
-    vertical_angle = models.FloatField()
-    slope_distance = models.FloatField()
-    created = models.DateTimeField(auto_now_add=True)
-    station = models.ForeignKey(TachyStation, related_name="%(class)ss")
-    FACE_ONE = 0
-    FACE_TWO = 1
-    FACE_CHOICES = (
-        (FACE_ONE, 'Lage I'),
-        (FACE_TWO, 'Lage II'),
-    )
-    face = models.PositiveSmallIntegerField(choices=FACE_CHOICES,
-                                            default=FACE_ONE)
-
-    class Meta:
-        abstract = True
-
-
-class FipoMeasurement(TachyMeasurement):
-    target = models.ForeignKey(FipoTarget, related_name="%(class)ss")
+class Box(models.Model):
+    name = models.CharField(max_length=15)
+    url = models.URLField()
+    project = models.ForeignKey("Project", blank=True, null=True, on_delete=models.SET_NULL)
 
     def __unicode__(self):
-        return "%s - %s" % (self.station, self.target)
+        return "%s (%s)" % (self.name, self.project)
 
 
-class SupoMeasurement(TachyMeasurement):
-    target = models.ForeignKey(SupoTarget, related_name="%(class)ss")
+class ObservationType(models.Model):
+    name = models.CharField(max_length=20)
+    unit = models.CharField(max_length=10)
+    description = models.CharField(max_length=200)
+    scale = models.FloatField(default=1)
 
-    def __unicode__(self):
-        return "%s - %s" % (self.station, self.target)
 
-    
-    
+class Limit(models.Model):
+    state = models.PositiveSmallIntegerField(default=0, choices=CONSTANTS.LIMIT_STATES)
+    value = models.DecimalField(max_digits=7, decimal_places=4)
+    obs_type = models.ForeignKey("ObservationType", on_delete=models.CASCADE)
+
+
+class LimitNotification(models.Model):
+    name = models.CharField(max_length=30)
+    limits = models.ManyToManyField("Limit")
+    user_notifications = models.ManyToManyField(Limit, through="UserNotification")
+    box_notifications = models.ManyToManyField(Limit, through="BoxNotification")
+
+
+class BoxNotification(models.Model):
+    boxes = models.ManyToManyField(Box)
+    limit = models.ForeignKey("Limit")
+    by_light = models.BooleanField(default=True)
+
+
+class UserNotification(models.Model):
+    users = models.ManyToManyField(User)
+    limit = models.ForeignKey("Limit")
+    by_mail = models.BooleanField(default=True)
+    by_text = models.BooleanField(default=True)
