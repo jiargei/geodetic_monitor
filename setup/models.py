@@ -2,6 +2,8 @@ import datetime
 from django.contrib.auth.models import User
 from django.db import models
 
+from bitfield import BitField
+
 from lib import CONSTANTS
 
 
@@ -34,7 +36,17 @@ class TimeWindow(models.Model):
     von = models.TimeField()
     bis = models.TimeField()
     frequency = models.DecimalField(default=10., decimal_places=2, max_digits=5)
-    day_of_week = models.CharField(max_length=7, default="1234567")
+    #day_of_week = models.CharField(max_length=7, default="1234567")
+
+    day_of_week = BitField(flags=(
+        'Montag',
+        'Dienstag',
+        'Mittwoch',
+        'Donnerstag',
+        'Freitag',
+        'Samstag',
+        'Sonntag',
+    ))
 
     def __unicode__(self):
         find_days = "["
@@ -54,7 +66,7 @@ class TimeWindow(models.Model):
             elif "7" in dow:
                 find_days += "so,"
         find_days += "]"
-        return "%s - %s an %s, %s min" % (self.von, self.bis, find_days, self.frequency)
+        return "%s - %s an %s, %s min" % (self.von, self.bis, self.day_of_week, self.frequency)
 
 
 class Project(models.Model):
@@ -116,16 +128,16 @@ class Target(Coordinate):
 
 
 class Task(models.Model):
-    time_window = models.ForeignKey("TimeWindow")
+    time_windows = models.ManyToManyField("TimeWindow")
     position = models.ForeignKey("Position")
     targets = models.ManyToManyField("Target")
     active = models.BooleanField(default=True)
 
     def __unicode__(self):
-        return "%s, %s, %s" % (self.position, self.targets, self.time_window)
+        return "%s, %s, %s" % (self.position, self.targets, self.time_windows)
 
     class Meta:
-        ordering = ["position", "time_window"]
+        ordering = ["position"]
 
 
 class Box(models.Model):
@@ -147,32 +159,53 @@ class ObservationType(models.Model):
         return "%s (%s)" % (self.name, self.unit)
 
 
-class Limit(models.Model):
-    state = models.PositiveSmallIntegerField(default=0, choices=CONSTANTS.LIMIT_STATES)
-    value = models.DecimalField(max_digits=7, decimal_places=4)
-    obs_type = models.ForeignKey("ObservationType", on_delete=models.CASCADE)
+class AlarmPlan(models.Model):
+    name = models.CharField(max_length=50)
+    observation_type = models.ForeignKey(ObservationType, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
 
     def __unicode__(self):
-        return "%s, %s\t\t%s" % (self.obs_type, dict(CONSTANTS.LIMIT_STATES).get(self.state), self.value)
+        return "%s (%s)" % (self.name, self.observation_type)
+
+
+class AlarmPhase(models.Model):
+    alarm_plan = models.ForeignKey(AlarmPlan, on_delete=models.CASCADE)
+    state = models.SmallIntegerField(default=0, choices=CONSTANTS.ALARM_STATES)
+    value = models.FloatField()
+
+    def __unicode__(self):
+        return "%s, %s, %s" % (self.alarm_plan, dict(CONSTANTS.ALARM_STATES).get(self.state), self.value)
 
     class Meta:
-        ordering = ["obs_type", "state"]
+        ordering = ["alarm_plan", "state"]
 
 
-class LimitNotification(models.Model):
-    name = models.CharField(max_length=30)
-    user_notifications = models.ForeignKey(User)
-    box_notifications = models.ForeignKey(Box)
+class AlarmNotification(models.Model):
+    alarm_phase = models.ForeignKey(AlarmPhase, on_delete=models.CASCADE)
+    users = models.ManyToManyField(User)
+    boxes = models.ManyToManyField(Box)
 
-
-class BoxNotification(models.Model):
-    box = models.ForeignKey(Box)
-    limit = models.ManyToManyField("Limit")
+    by_mail = models.BooleanField(default=True)
+    by_text = models.BooleanField(default=True)
     by_light = models.BooleanField(default=True)
 
 
 class UserNotification(models.Model):
-    user = models.ForeignKey(User)
-    limit = models.ManyToManyField("Limit")
-    by_mail = models.BooleanField(default=True)
-    by_text = models.BooleanField(default=True)
+    alarm_phase = models.ForeignKey(AlarmPhase, on_delete=models.CASCADE)
+    users = models.ManyToManyField(User)
+    notification_type = BitField(
+        flags=(
+            'SMS',
+            'EMail',
+        )
+    )
+
+
+class BoxNotification(models.Model):
+    alarm_phase = models.ForeignKey(AlarmPhase, on_delete=models.CASCADE)
+    boxes = models.ManyToManyField(Box)
+    notification_type = BitField(
+        flags=(
+            'Blinklicht',
+        )
+    )

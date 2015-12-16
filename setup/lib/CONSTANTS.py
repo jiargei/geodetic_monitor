@@ -27,10 +27,10 @@ STATION_STABILISATION_CHOICE = (
     ('u', 'unstabile Station'),
 )
 
-LIMIT_STATES = (
-    (-2, "ROT-"),
-    (-1, "ORANGE-"),
-    (0, "GRUEN"),
-    (1, "ORANGE+"),
-    (2, "ROT+"),
+ALARM_STATES = (
+    (-2, "-ROT-"),
+    (-1, "-ORANGE-"),
+    (0, "+GRUEN+"),
+    (1, "+ORANGE+"),
+    (2, "+ROT+"),
 )
