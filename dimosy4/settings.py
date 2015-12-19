@@ -10,6 +10,8 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+import rollbar
+
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
@@ -48,6 +50,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'rollbar.contrib.django.middleware.RollbarNotifierMiddleware',
 )
 
 ROOT_URLCONF = 'dimosy4.urls'
@@ -93,3 +96,10 @@ REST_FRAMEWORK = {
     'rest_framework.permissions.IsAuthenticated',
     )
 }
+
+ROLLBAR = {
+    'access_token': '4b848a2edb694790923a1c8146a24b8f',
+    'environment': 'development' if DEBUG else 'production',
+    'root': BASE_DIR,
+}
+rollbar.init(**ROLLBAR)
