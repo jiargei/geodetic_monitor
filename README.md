@@ -9,6 +9,15 @@ Dieses Repository dient der Entwicklung einer Django-optimierten Version von DIM
 * Aktueller Entwicklungsstand
 * Changes von Version von zu Version
 
+## Installation der notwendigen Python-Pakete ##
+
+Dank an lazerscience
+
+```
+#!bash
+pip install -r requirements.txt --no-deps
+```
+
 ## Quickstart ##
 
 ### DIMOSY-Django Setup ###
