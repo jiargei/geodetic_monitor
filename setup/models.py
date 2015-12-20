@@ -18,9 +18,9 @@ class Membership(models.Model):
                             default="u")
 
     def __unicode__(self):
-        return "%s ist %s in %s" % (self.user,
-                                    dict(CONSTANTS.USER_ROLE_CHOICES).get(self.role),
-                                    self.project)
+        return u"%s ist %s in %s" % (self.user,
+                                     dict(CONSTANTS.USER_ROLE_CHOICES).get(self.role),
+                                     self.project)
 
 
 class Coordinate(models.Model):
@@ -66,7 +66,7 @@ class TimeWindow(models.Model):
             elif "7" in dow:
                 find_days += "so,"
         find_days += "]"
-        return "%s - %s an %s, %s min" % (self.von, self.bis, self.day_of_week, self.frequency)
+        return u"%s - %s an %s, %s min" % (self.von, self.bis, self.day_of_week, self.frequency)
 
 
 class Project(models.Model):
@@ -77,7 +77,7 @@ class Project(models.Model):
     members = models.ManyToManyField(User, through=Membership)
 
     def __unicode__(self):
-        return "%s - %s" % (self.token, self.name)
+        return u"%s - %s" % (self.token, self.name)
 
     class Meta:
         ordering = ["active", "name"]
@@ -89,7 +89,7 @@ class Position(models.Model):
     recent_sensor = models.ForeignKey("Sensor", blank=True, null=True, on_delete=models.SET_NULL)
 
     def __unicode__(self):
-        return "%s" % self.name
+        return u"%s" % self.name
 
 
 class Station(Coordinate):
@@ -100,7 +100,7 @@ class Station(Coordinate):
     bis = models.DateTimeField(default=datetime.datetime.now())
 
     def __unicode__(self):
-        return "%s (%s)" % (self.name, self.position.name)
+        return u"%s (%s)" % (self.name, self.position.name)
 
     class Meta:
         ordering = ["position", "von"]
@@ -111,7 +111,7 @@ class Sensor(models.Model):
     serial_number = models.CharField(max_length=20)
 
     def __unicode__(self):
-        return "%s (%s)" % (self.name, self.serial_number)
+        return u"%s (%s)" % (self.name, self.serial_number)
 
 
 class Target(Coordinate):
@@ -121,7 +121,7 @@ class Target(Coordinate):
     project = models.ForeignKey("Project", on_delete=models.CASCADE)
 
     def __unicode__(self):
-        return "%s (%s)" % (self.name, dict(CONSTANTS.TARGET_TYPE_CHOICES).get(self.target_type))
+        return u"%s (%s)" % (self.name, dict(CONSTANTS.TARGET_TYPE_CHOICES).get(self.target_type))
 
     class Meta:
         ordering = ["target_type", "name"]
@@ -134,7 +134,7 @@ class Task(models.Model):
     active = models.BooleanField(default=True)
 
     def __unicode__(self):
-        return "%s, %s, %s" % (self.position, self.targets, self.time_windows)
+        return u"%s, %s, %s" % (self.position, self.targets, self.time_windows)
 
     class Meta:
         ordering = ["position"]
@@ -146,7 +146,7 @@ class Box(models.Model):
     project = models.ForeignKey("Project", blank=True, null=True, on_delete=models.SET_NULL)
 
     def __unicode__(self):
-        return "%s (%s)" % (self.name, self.project)
+        return u"%s (%s)" % (self.name, self.project)
 
 
 class ObservationType(models.Model):
@@ -156,7 +156,7 @@ class ObservationType(models.Model):
     scale = models.FloatField(default=1)
 
     def __unicode__(self):
-        return "%s (%s)" % (self.name, self.unit)
+        return u"%s (%s)" % (self.name, self.unit)
 
 
 class AlarmPlan(models.Model):
@@ -165,7 +165,7 @@ class AlarmPlan(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
 
     def __unicode__(self):
-        return "%s (%s)" % (self.name, self.observation_type)
+        return u"%s (%s)" % (self.name, self.observation_type)
 
 
 class AlarmPhase(models.Model):
@@ -174,7 +174,7 @@ class AlarmPhase(models.Model):
     value = models.FloatField()
 
     def __unicode__(self):
-        return "%s, %s, %s" % (self.alarm_plan, dict(CONSTANTS.ALARM_STATES).get(self.state), self.value)
+        return u"%s, %s, %s" % (self.alarm_plan, dict(CONSTANTS.ALARM_STATES).get(self.state), self.value)
 
     class Meta:
         ordering = ["alarm_plan", "state"]
@@ -187,6 +187,7 @@ class AlarmNotification(models.Model):
 
     by_mail = models.BooleanField(default=True)
     by_text = models.BooleanField(default=True)
+    by_voice = models.BooleanField(default=True)
     by_light = models.BooleanField(default=True)
 
 
@@ -196,6 +197,7 @@ class UserNotification(models.Model):
     notification_type = BitField(
         flags=(
             'SMS',
+            'Voice',
             'EMail',
         )
     )

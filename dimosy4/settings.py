@@ -97,6 +97,13 @@ REST_FRAMEWORK = {
     )
 }
 
+# TEMPLATES = [
+#     {
+#         'BACKEND': 'django.template.backends.django.DjangoTemplates',
+#         'APP_DIRS': False,
+#     },
+# ]
+
 ROLLBAR = {
     'access_token': '4b848a2edb694790923a1c8146a24b8f',
     'environment': 'development' if DEBUG else 'production',
