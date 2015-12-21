@@ -10,6 +10,15 @@ from setup.models import ObservationType, AlarmPlan, AlarmPhase, AlarmNotificati
 # Register your models here.
 
 
+class MembershipInline(admin.TabularInline):
+    model = Membership
+
+
+class ProjectAdmin(admin.ModelAdmin):
+    inlines = [MembershipInline]
+    extra = 1
+
+
 class NotificationAdmin(admin.ModelAdmin):
     formfield_overrides = {
         BitField: {'widget': BitFieldCheckboxSelectMultiple},
@@ -38,8 +47,8 @@ class AlarmPlanAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Box)
-admin.site.register(Project)
-admin.site.register(Membership)
+admin.site.register(Project, ProjectAdmin)
+# admin.site.register(Membership)
 admin.site.register(Position)
 admin.site.register(Station)
 admin.site.register(Sensor)

@@ -11,11 +11,20 @@ Dieses Repository dient der Entwicklung einer Django-optimierten Version von DIM
 
 ## Installation der notwendigen Python-Pakete ##
 
+* Installation Anaconda
+* Installation Git
+* Umgebungsvariablen anpassen PATH;C:\Program Files (x86)\Anaconda\Scripts;C:\Program Files (x86)\Anaconda
+
 Dank an lazerscience
 
 ```
 #!bash
+git clone git@bitbucket.org:koeffizient/dimosy_django.git
 pip install -r requirements.txt --no-deps
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py makemigrations setup
+python manage.py migrate
 ```
 
 ## Quickstart ##
