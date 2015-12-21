@@ -11,6 +11,15 @@ from lib import CONSTANTS
 
 
 class Membership(models.Model):
+    """
+    Membership links an user with a project regarding a certain role. Roles can be
+
+    * Admin
+    * Manager
+    * User
+
+    ...
+    """
     user = models.ForeignKey(User)
     project = models.ForeignKey("Project", on_delete=models.CASCADE)
     role = models.CharField(max_length=1,
