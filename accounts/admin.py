@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Project, Membership, Box, Sensor
+from .models import Project, Membership, Box, Sensor, CustomUser
 
 from alarm.models import UserNotification, BoxNotification
 from tachy.admin import TachyTargetInline, TachyPositionInline
@@ -13,9 +13,19 @@ class MembershipInline(admin.TabularInline):
     extra = 1
 
 
+class BoxInline(admin.TabularInline):
+    model = Box
+    extra = 1
+
+
+@admin.register(CustomUser)
+class CustomUserAdmin(admin.ModelAdmin):
+    inlines = [MembershipInline]
+
+
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
-    inlines = [MembershipInline, TachyPositionInline, TachyTargetInline]
+    inlines = [MembershipInline, TachyPositionInline, TachyTargetInline, BoxInline]
 
 
 @admin.register(Box)

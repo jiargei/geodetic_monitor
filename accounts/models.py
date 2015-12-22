@@ -1,13 +1,24 @@
 from __future__ import unicode_literals
 from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractBaseUser
 from django.db import models
 from libs import constants
 
 # Create your models here.
 
 
+class CustomUser(AbstractBaseUser):
+    username = models.CharField(max_length=20, unique=True)
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=20)
+    email = models.CharField(max_length=50)
+
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['username, first_name, last_name']
+
+
 class Membership(models.Model):
-    user = models.ForeignKey(User, unique=True)
+    user = models.ForeignKey(CustomUser, unique=True)
     project = models.ForeignKey("accounts.Project", on_delete=models.CASCADE)
     role = models.CharField(max_length=1,
                             choices=constants.USER_ROLE_CHOICES,
@@ -24,7 +35,7 @@ class Project(models.Model):
     description = models.CharField(max_length=255, default='')
     token = models.CharField(max_length=10, default='', unique=True)
     active = models.BooleanField(default=True)
-    members = models.ManyToManyField(User, through=Membership)
+    members = models.ManyToManyField(CustomUser, through=Membership)
 
     def __unicode__(self):
         return u"%s - %s" % (self.token, self.name)

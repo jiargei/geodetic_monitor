@@ -9,25 +9,6 @@ from setup.models import ObservationType
 # Register your models here.
 
 
-<<<<<<< HEAD
-=======
-class MembershipInline(admin.TabularInline):
-    model = Membership
-
-
-class ProjectAdmin(admin.ModelAdmin):
-    inlines = [MembershipInline]
-    extra = 1
-
-
-class NotificationAdmin(admin.ModelAdmin):
-    formfield_overrides = {
-        BitField: {'widget': BitFieldCheckboxSelectMultiple},
-    }
-    # list_filter = (
-    #     ('flags', BitFieldListFilter,)
-    # )
-
 admin.site.register(Position)
 admin.site.register(Station)
 admin.site.register(Sensor)
