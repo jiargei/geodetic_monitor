@@ -3,14 +3,17 @@ from datetime import datetime
 
 from django.db import models
 
-from base.models import Position, Coordinate, Target
+from base.models import Position, Coordinate, Target, Sensor
+from tasks.models import Task
 from libs import constants
+from .lib import constants as tc
 
 # Create your models here.
 
 
 class TachyPosition(Position):
-    pass
+    def __unicode__(self):
+        return u"%s-TACHY-%s" % (self.project.token, self.name)
 
 
 class TachyTarget(Target):
@@ -18,7 +21,7 @@ class TachyTarget(Target):
     prism_type = models.PositiveSmallIntegerField(choices=constants.PRISM_CHOICES, default=1)
 
     def __unicode__(self):
-        return u"%s-%s (%s)" % (self.project.token, self.name, dict(constants.TARGET_TYPE_CHOICES).get(self.target_type))
+        return u"%s-TACHY-%s (%s)" % (self.project.token, self.name, dict(constants.TARGET_TYPE_CHOICES).get(self.target_type))
 
     class Meta:
         ordering = ["target_type", "name"]
@@ -36,3 +39,11 @@ class TachyStation(Coordinate):
     class Meta:
         ordering = ["position", "von"]
 
+
+class TachyTask(Task):
+    position = models.ForeignKey("TachyPosition", on_delete=models.CASCADE)
+    targets = models.ManyToManyField("TachyTarget")
+
+
+class TachySensor(Sensor):
+    model_type = models.PositiveSmallIntegerField(choices=tc.MODEL_TYPE_CHOICE, default=11)

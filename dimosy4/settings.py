@@ -43,6 +43,7 @@ INSTALLED_APPS = (
     'alarm',
     'base',
     'tachy',
+    'tasks',
 )
 
 MIDDLEWARE_CLASSES = (

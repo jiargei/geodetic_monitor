@@ -22,7 +22,7 @@ class PositionMembership(models.Model):
 
 class Position(models.Model):
     name = models.CharField(max_length=50)
-    project = models.OneToOneField("accounts.Project", on_delete=models.CASCADE)
+    project = models.ForeignKey("accounts.Project", on_delete=models.CASCADE)
 
     def __unicode__(self):
         return u"%s-%s" % (self.project.token, self.name)
@@ -30,7 +30,7 @@ class Position(models.Model):
 
 class Target(Coordinate):
     name = models.CharField(max_length=20)
-    project = models.OneToOneField("accounts.Project", max_length=models.CASCADE)
+    project = models.ForeignKey("accounts.Project", on_delete=models.CASCADE)
 
     def __unicode__(self):
         return u"%s-%s" % (self.project.token, self.name)
@@ -44,3 +44,11 @@ class ObservationType(models.Model):
 
     def __unicode__(self):
         return u"%s (%s)" % (self.name, self.unit)
+
+
+class Sensor(models.Model):
+    name = models.CharField(max_length=40)
+    serial_number = models.CharField(max_length=20)
+
+    def __unicode__(self):
+        return u"%s (%s)" % (self.name, self.serial_number)

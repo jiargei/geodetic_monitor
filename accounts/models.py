@@ -18,7 +18,7 @@ class CustomUser(AbstractBaseUser):
 
 
 class Membership(models.Model):
-    user = models.ForeignKey(CustomUser, unique=True)
+    user = models.OneToOneField(CustomUser, unique=True)
     project = models.ForeignKey("accounts.Project", on_delete=models.CASCADE)
     role = models.CharField(max_length=1,
                             choices=constants.USER_ROLE_CHOICES,
@@ -51,6 +51,9 @@ class Box(models.Model):
 
     def __unicode__(self):
         return u"%s (%s)" % (self.name, self.project)
+
+    class Meta:
+        verbose_name_plural = "Boxes"
 
 
 class Sensor(models.Model):

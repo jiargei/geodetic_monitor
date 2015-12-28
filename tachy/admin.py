@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from tachy.models import TachyPosition, TachyTarget
+from tachy.models import TachyPosition, TachyTarget, TachyTask, TachySensor
+from tasks.admin import TimeWindowInline
 
 # Register your models here.
 
@@ -8,6 +9,21 @@ from tachy.models import TachyPosition, TachyTarget
 @admin.register(TachyTarget)
 class TachyTargetAdmin(admin.ModelAdmin):
     pass
+
+
+@admin.register(TachyPosition)
+class TachyPositionAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(TachySensor)
+class TachySensorAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(TachyTask)
+class TachyTaskAdmin(admin.ModelAdmin):
+    inlines = [TimeWindowInline]
 
 
 class TachyPositionInline(admin.TabularInline):
