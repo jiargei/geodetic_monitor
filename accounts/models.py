@@ -18,7 +18,20 @@ class CustomUser(AbstractBaseUser):
 
 
 class Membership(models.Model):
-    user = models.OneToOneField(CustomUser, unique=True)
+    """
+    Membership controls the user role inside a project.
+
+    An user can work with different roles in different projects but has to be unique for each project.
+
+    fields
+    ------
+
+    user: Select user to set role in project for
+    project: ...
+    role: ...
+
+    """
+    user = models.OneToOneField("accounts.CustomUser", unique=True)
     project = models.ForeignKey("accounts.Project", on_delete=models.CASCADE)
     role = models.CharField(max_length=1,
                             choices=constants.USER_ROLE_CHOICES,
@@ -41,7 +54,7 @@ class Project(models.Model):
         return u"%s - %s" % (self.token, self.name)
 
     class Meta:
-        ordering = ["active", "name"]
+        ordering = ["active", "name"]  # Project.Meta.ordering = []
 
 
 class Box(models.Model):
@@ -50,10 +63,10 @@ class Box(models.Model):
     project = models.ForeignKey("accounts.Project", blank=True, null=True, on_delete=models.SET_NULL)
 
     def __unicode__(self):
-        return u"%s (%s)" % (self.name, self.project)
+        return u"%s (%s)" % (self.name, self.project)  # b1 = Box(name="Cygnus"); print b1 -> "Cygnus (BEAX)"
 
     class Meta:
-        verbose_name_plural = "Boxes"
+        verbose_name_plural = "boxes"
 
 
 class Sensor(models.Model):

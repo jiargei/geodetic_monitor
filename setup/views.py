@@ -3,7 +3,7 @@ from django.views.generic.edit import FormView
 
 
 class TachyControlView(FormView):
-    template_name = 'setup/tachy-control.html'
+    template_name = 'tachy/tachy-control.html'
     form_class = TachyControlForm
     success_url = '/thanks/'
 

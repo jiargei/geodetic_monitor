@@ -1,4 +1,7 @@
 
+# from constants_web import * # -> constants.RGB_COLOR
+# import constants_web # -> constants.constants_web.RGB_COLOR
+
 USER_ROLE_CHOICES = (
     ("u", "User"),
     ("m", "Manager"),

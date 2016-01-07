@@ -36,6 +36,9 @@ class TachyStation(Coordinate):
     def __unicode__(self):
         return u"%s (%s)" % (self.name, self.position.name)
 
+    def set_station(self):
+        pass
+
     class Meta:
         ordering = ["position", "von"]
 

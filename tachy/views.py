@@ -6,29 +6,21 @@ from .forms import UploadFileForm
 
 from .models import TachyTarget
 from csvImporter.model import CsvDbModel
+from django.views.generic.edit import FormView
+from tachy.forms import TachyControlForm
 
 # Create your views here.
 
 # Imaginary function to handle an uploaded file.
 
 
-class TachyTargetCsvModel(CsvDbModel):
+class TachyControlView(FormView):
+    template_name = 'tachy/control.html'
+    form_class = TachyControlForm
+    success_url = '/thanks/'
 
-    class Meta:
-        dbModel = TachyTarget
-        delimiter = ";"
-
-
-def handle_uploaded_file(f):
-    csv_list = TachyTargetCsvModel.import_data(data=open(f))
-
-
-def upload_file(request):
-    if request.method == 'POST':
-        form = UploadFileForm(request.POST, request.FILES)
-        if form.is_valid():
-            handle_uploaded_file(request.FILES['file'])
-            return HttpResponseRedirect('/success/url/')
-    else:
-        form = UploadFileForm()
-    return render(request, 'upload.html', {'form': form})
+    def form_valid(self, form):
+        # This method is called when valid form data has been POSTed.
+        # It should return an HttpResponse.
+        form.execute()
+        return super(TachyControlView, self).form_valid(form)

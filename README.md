@@ -29,6 +29,13 @@ python manage.py migrate
 
 ## Quickstart ##
 
+### Create Django module ###
+
+```
+#!bash
+$ python manage.py startapp modulname
+```
+
 ### DIMOSY-Django Setup ###
 
 ### ... ###

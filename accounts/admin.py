@@ -23,6 +23,7 @@ class CustomUserAdmin(admin.ModelAdmin):
     inlines = [MembershipInline]
 
 
+# admin.site.register(Project)
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
     inlines = [MembershipInline, TachyPositionInline, TachyTargetInline, BoxInline]
