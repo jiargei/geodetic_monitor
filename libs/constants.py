@@ -9,9 +9,13 @@ USER_ROLE_CHOICES = (
 )
 
 PRISM_CHOICES = (
-        (1, 'Miniprisma'),
-        (7, 'Miniprisma 360'),
-    )
+    (0, "Leica Rundprisma"),
+    (1, 'Leica Miniprisma'),
+    (2, 'Leica Reflektorfolie'),
+    (3, 'Leica 360'),
+    (7, 'Leica Miniprisma 360'),
+    (11, 'kein Prisma')
+)
 
 TARGET_TYPE_CHOICES = (
     ("d", "Deformationspunkt"),
