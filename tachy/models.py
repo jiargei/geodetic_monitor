@@ -1,12 +1,14 @@
 from __future__ import unicode_literals
+
 from datetime import datetime
 
 from django.db import models
 
 from base.models import Position, Coordinate, Target, Sensor
-from tasks.models import Task
 from libs import constants
+from tasks.models import Task
 from .lib import constants as tc
+
 
 # Create your models here.
 
@@ -46,6 +48,38 @@ class TachyStation(Coordinate):
 class TachyTask(Task):
     position = models.ForeignKey("TachyPosition", on_delete=models.CASCADE)
     targets = models.ManyToManyField("TachyTarget")
+
+    def __unicode__(self):
+        target_names = ""
+        for target in self.targets.all():
+            target_names += ", %s" % target.name
+
+        return "%s: %s" % (self.position, self.targets)
+
+        # def save(self, *args, **kwargs):
+        #     """
+        #     Checks if there is only one Task for each target
+        #
+        #     :param args:
+        #     :param kwargs:
+        #     :return:
+        #     """
+        #     target_found = False
+        #     target_list = []
+        #
+        #     for target in self.targets.all():
+        #         target_was_found = TachyTask.objects.filter(targets__pk=target.pk).count()
+        #
+        #         if target_was_found:
+        #             target_list.append(target)
+        #             target_found = True
+        #
+        #     if target_found:
+        #         print "Element kann nicht gespeichert werden, folgende Ziele sind bereits vorhanden:"
+        #         for target in target_list:
+        #             print "- %s" % target
+        #     else:
+        #         super(TachyTask).save(*args, **kwargs)
 
 
 class TachySensor(Sensor):

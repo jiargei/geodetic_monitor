@@ -1,12 +1,13 @@
 from __future__ import unicode_literals
 
-from django.db import models
 from bitfield import BitField
+from django.db import models
 
 # Create your models here.
 
 
 class TimeWindow(models.Model):
+    active = models.BooleanField(default=True)
     task = models.ForeignKey("Task", on_delete=models.CASCADE)
     start_time = models.TimeField()
     end_time = models.TimeField()
@@ -20,6 +21,9 @@ class TimeWindow(models.Model):
         'Samstag',
         'Sonntag',
     ))
+
+    def __unicode__(self):
+        return "von %s, bis %s, alle %.1f Minten" % (self.start_time, self.end_time, self.frequency)
 
 
 class Task(models.Model):
