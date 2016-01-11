@@ -23,6 +23,7 @@ git clone git@bitbucket.org:koeffizient/dimosy_django.git
 pip install -r requirements.txt --no-deps
 python manage.py migrate
 python manage.py createsuperuser
+python manage.py runserver
 ```
 
 ## Quickstart ##
