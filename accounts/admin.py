@@ -1,9 +1,7 @@
 from django.contrib import admin
 
-from .models import Project, Membership, Box, Sensor, User
-
-from alarm.models import UserNotification, BoxNotification
-from tachy.admin import TachyTargetInline, TachyPositionInline
+from sensors.tachy.admin import TachyTargetInline, TachyPositionInline
+from .models import Project, Membership, Box, User
 
 # Register your models here.
 
@@ -34,7 +32,3 @@ class BoxAdmin(admin.ModelAdmin):
     # inlines = [BoxNotification]
     pass
 
-
-@admin.register(Sensor)
-class SensorAdmin(admin.ModelAdmin):
-    pass

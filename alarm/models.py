@@ -1,18 +1,17 @@
 from __future__ import unicode_literals
 
+from bitfield import BitField
 from django.db import models
 
 from accounts.models import User
-
-from libs import constants
-from bitfield import BitField
+from common import constants
 
 # Create your models here.
 
 
 class AlarmPlan(models.Model):
     name = models.CharField(max_length=50)
-    observation_type = models.ForeignKey("base.ObservationType", on_delete=models.CASCADE)
+    observation_type = models.ForeignKey("sensors.ObservationType", on_delete=models.CASCADE)
     project = models.ForeignKey("accounts.Project", on_delete=models.CASCADE)
 
     def __unicode__(self):

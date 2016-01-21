@@ -1,17 +1,19 @@
 from __future__ import unicode_literals
-from django.contrib.auth.models import User
-from django.contrib.auth.models import AbstractUser
-from django.db import models
-from django.contrib.auth.models import UserManager
 
-from libs import constants
+from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import User
+from django.contrib.auth.models import UserManager
+from django.db import models
+
+from common import constants
+
 
 # Create your models here.
 
 
 class User(AbstractUser):
-
-    objects = UserManager()
+    pass
+    # objects = UserManager()
 
 
 class Membership(models.Model):
@@ -28,7 +30,7 @@ class Membership(models.Model):
     role: ...
 
     """
-    user = models.OneToOneField("accounts.User", unique=True)
+    user = models.ForeignKey("accounts.User")
     project = models.ForeignKey("accounts.Project", on_delete=models.CASCADE)
     role = models.CharField(max_length=1,
                             choices=constants.USER_ROLE_CHOICES,
@@ -38,6 +40,9 @@ class Membership(models.Model):
         return u"%s ist %s in %s" % (self.user,
                                      dict(constants.USER_ROLE_CHOICES).get(self.role),
                                      self.project)
+
+    class Meta:
+        unique_together = [("user", "project")]
 
 
 class Project(models.Model):
@@ -65,11 +70,3 @@ class Box(models.Model):
     class Meta:
         verbose_name_plural = "boxes"
 
-
-class Sensor(models.Model):
-    sensor_name = models.CharField(max_length=100)
-    sensor_serial = models.CharField(max_length=20, unique=True)
-    sensor_type = models.PositiveSmallIntegerField(default=1, choices=constants.SENSOR_TYPE_CHOICES)
-
-    def __unicode__(self):
-        return u"%s-%s" % (dict(constants.SENSOR_TYPE_CHOICES).get(self.sensor_type), self.sensor_name)
