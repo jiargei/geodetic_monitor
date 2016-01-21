@@ -3,13 +3,18 @@ from __future__ import unicode_literals
 from django.db import models
 
 from common import constants
+from common import fields
 
 # Create your models here.
 
 
 class ObservationType(models.Model):
-    name = models.CharField(max_length=20)
-    unit = models.CharField(max_length=10)
+    """
+
+    """
+    id = fields.IdField()
+    name = models.CharField(max_length=20, choices=constants.OBSERVATION_TYPE_CHOICES, unique=True)
+    unit = models.CharField(max_length=10, choices=constants.OBSERVATION_UNIT_CHOICES)
     description = models.CharField(max_length=200)
     scale = models.FloatField(default=1)
 
@@ -18,6 +23,10 @@ class ObservationType(models.Model):
 
 
 class Sensor(models.Model):
+    """
+
+    """
+    id = fields.IdField()
     sensor_name = models.CharField(max_length=100)
     sensor_serial = models.CharField(max_length=20, unique=True)
     # sensor_type = models.PositiveSmallIntegerField(default=1, choices=constants.SENSOR_TYPE_CHOICES)
@@ -28,6 +37,10 @@ class Sensor(models.Model):
 
 
 class Coordinate(models.Model):
+    """
+
+    """
+    id = fields.IdField()
     easting = models.FloatField()
     northing = models.FloatField()
     height = models.FloatField()
@@ -36,11 +49,11 @@ class Coordinate(models.Model):
         abstract = True
 
 
-class PositionMembership(models.Model):
-    position = models.OneToOneField("accounts.Project", on_delete=models.CASCADE)
-
-
 class Position(models.Model):
+    """
+
+    """
+    id = fields.IdField()
     name = models.CharField(max_length=50)
     project = models.ForeignKey("accounts.Project", on_delete=models.CASCADE)
 
@@ -49,6 +62,9 @@ class Position(models.Model):
 
 
 class Target(Coordinate):
+    """
+
+    """
     name = models.CharField(max_length=20)
     project = models.ForeignKey("accounts.Project", on_delete=models.CASCADE)
 

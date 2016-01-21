@@ -6,14 +6,18 @@ from django.contrib.auth.models import UserManager
 from django.db import models
 
 from common import constants
+from common import fields
 
 
 # Create your models here.
 
 
 class User(AbstractUser):
-    pass
+    """
+
+    """
     # objects = UserManager()
+    pass
 
 
 class Membership(models.Model):
@@ -30,6 +34,7 @@ class Membership(models.Model):
     role: ...
 
     """
+    id = fields.IdField()
     user = models.ForeignKey("accounts.User")
     project = models.ForeignKey("accounts.Project", on_delete=models.CASCADE)
     role = models.CharField(max_length=1,
@@ -46,6 +51,10 @@ class Membership(models.Model):
 
 
 class Project(models.Model):
+    """
+
+    """
+    id = fields.IdField()
     name = models.CharField(max_length=50)
     description = models.CharField(max_length=255, default='')
     token = models.CharField(max_length=10, default='', unique=True)
@@ -60,6 +69,10 @@ class Project(models.Model):
 
 
 class Box(models.Model):
+    """
+
+    """
+    id = fields.IdField()
     name = models.CharField(max_length=15)
     url = models.URLField()
     project = models.ForeignKey("accounts.Project", blank=True, null=True, on_delete=models.SET_NULL)
@@ -69,4 +82,3 @@ class Box(models.Model):
 
     class Meta:
         verbose_name_plural = "boxes"
-

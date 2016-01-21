@@ -39,7 +39,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django_extensions',
     'accounts',
-    'alarm',
+    'alarms',
     'sensors',
     'sensors.tachy',
     'sensors.nivel',

@@ -5,11 +5,16 @@ from django.db import models
 
 from accounts.models import User
 from common import constants
+from common import fields
 
 # Create your models here.
 
 
 class AlarmPlan(models.Model):
+    """
+
+    """
+    id = fields.IdField()
     name = models.CharField(max_length=50)
     observation_type = models.ForeignKey("sensors.ObservationType", on_delete=models.CASCADE)
     project = models.ForeignKey("accounts.Project", on_delete=models.CASCADE)
@@ -19,6 +24,10 @@ class AlarmPlan(models.Model):
 
 
 class AlarmPhase(models.Model):
+    """
+
+    """
+    id = fields.IdField()
     alarm_plan = models.ForeignKey("AlarmPlan", on_delete=models.CASCADE)
     state = models.SmallIntegerField(default=0, choices=constants.ALARM_STATES)
     value = models.FloatField()
@@ -31,6 +40,10 @@ class AlarmPhase(models.Model):
 
 
 class UserNotification(models.Model):
+    """
+
+    """
+    id = fields.IdField()
     alarm_phase = models.ForeignKey("AlarmPhase", on_delete=models.CASCADE)
     users = models.ManyToManyField(User)
     notification_type = BitField(
@@ -43,6 +56,10 @@ class UserNotification(models.Model):
 
 
 class BoxNotification(models.Model):
+    """
+
+    """
+    id = fields.IdField()
     alarm_phase = models.ForeignKey("AlarmPhase", on_delete=models.CASCADE)
     boxes = models.ManyToManyField("accounts.Box")
     notification_type = BitField(

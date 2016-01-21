@@ -8,17 +8,25 @@ from sensors.models import Position, Coordinate, Target, Sensor
 from sensors.tachy import constants as tc
 from tasks.models import Task
 from common import constants as mc
+from common import fields
 
 
 # Create your models here.
 
 
 class TachyPosition(Position):
+    """
+
+    """
+
     def __unicode__(self):
         return u"%s-TACHY-%s" % (self.project.token, self.name)
 
 
 class TachyTarget(Target):
+    """
+
+    """
     target_type = models.CharField(default='d', max_length=1, choices=mc.TARGET_TYPE_CHOICES)
     prism_type = models.PositiveSmallIntegerField(choices=tc.PRISM_CHOICES, default=1)
 
@@ -30,6 +38,9 @@ class TachyTarget(Target):
 
 
 class TachyStation(Coordinate):
+    """
+
+    """
     position = models.ForeignKey("TachyPosition", on_delete=models.CASCADE)
     # sensor = models.ForeignKey("Sensor", on_delete=models.SET_NULL, null=True, blank=True)
     von = models.DateTimeField(default=datetime.now())
@@ -46,6 +57,9 @@ class TachyStation(Coordinate):
 
 
 class TachyTask(Task):
+    """
+
+    """
     position = models.ForeignKey("TachyPosition", on_delete=models.CASCADE)
     targets = models.ManyToManyField("TachyTarget")
 
@@ -83,4 +97,7 @@ class TachyTask(Task):
 
 
 class TachySensor(Sensor):
+    """
+
+    """
     sensor_model = models.PositiveSmallIntegerField(choices=tc.MODEL_TYPE_CHOICE, default=11)
