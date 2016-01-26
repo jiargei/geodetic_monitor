@@ -20,6 +20,24 @@ class User(AbstractUser):
     pass
 
 
+class Project(models.Model):
+    """
+
+    """
+    id = fields.IdField()
+    name = models.CharField(max_length=50)
+    description = models.CharField(max_length=255, default='')
+    token = models.CharField(max_length=10, default='', unique=True)
+    active = models.BooleanField(default=True)
+    members = models.ManyToManyField(User, through="accounts.Membership")
+
+    def __unicode__(self):
+        return u"%s - %s" % (self.token, self.name)
+
+    class Meta:
+        ordering = ["active", "name"]
+
+
 class Membership(models.Model):
     """
     Membership controls the user role inside a project.
@@ -48,24 +66,6 @@ class Membership(models.Model):
 
     class Meta:
         unique_together = [("user", "project")]
-
-
-class Project(models.Model):
-    """
-
-    """
-    id = fields.IdField()
-    name = models.CharField(max_length=50)
-    description = models.CharField(max_length=255, default='')
-    token = models.CharField(max_length=10, default='', unique=True)
-    active = models.BooleanField(default=True)
-    members = models.ManyToManyField(User, through=Membership)
-
-    def __unicode__(self):
-        return u"%s - %s" % (self.token, self.name)
-
-    class Meta:
-        ordering = ["active", "name"]  # Project.Meta.ordering = []
 
 
 class Box(models.Model):
