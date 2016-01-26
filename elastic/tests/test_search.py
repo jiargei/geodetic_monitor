@@ -29,5 +29,8 @@ def run():
     pprint.pprint(sq)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__"
+    """
+    Zapalot!
+    """
     run()
