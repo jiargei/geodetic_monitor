@@ -3,6 +3,12 @@ import pprint
 
 
 def run():
+    """
+    Searches for a specific position and target in elasticsearch tachy measurements
+    run test_file_upload.py first!!!
+
+    :return: dict
+    """
     es = Elasticsearch()
 
     qdsl = {

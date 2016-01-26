@@ -8,6 +8,9 @@ from elastic.common import constants
 
 
 class Measurement(object):
+    """
+    just a test class to handle tachy measurement data
+    """
     def __init__(self, *args, **kwargs):
         self.id = kwargs.get("id")
         self.created = kwargs.get("created")
@@ -23,6 +26,12 @@ class Measurement(object):
 
 
 def run(its=10):
+    """
+    creates random tachy measurement data for elasticsearch server
+
+    :param its: how many iterations to create pairs of positions and targets
+    :return:
+    """
     es = Elasticsearch()
 
     logging.basicConfig(level=logging.INFO)
