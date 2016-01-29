@@ -1,6 +1,5 @@
-from django.views.generic.edit import FormView
-
 from sensors.tachy.forms import TachyControlForm
+from django.views.generic.edit import FormView
 
 
 # Create your views here.

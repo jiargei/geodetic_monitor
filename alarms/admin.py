@@ -1,9 +1,8 @@
-from django.contrib import admin
-
-from bitfield.forms import BitFieldCheckboxSelectMultiple
 from bitfield import BitField
+from bitfield.forms import BitFieldCheckboxSelectMultiple
 
 from models import AlarmPlan, AlarmPhase, UserNotification, BoxNotification
+from django.contrib import admin
 
 
 # Register your models here.

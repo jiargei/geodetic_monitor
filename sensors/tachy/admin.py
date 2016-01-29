@@ -1,6 +1,5 @@
-from django.contrib import admin
-
 from sensors.tachy.models import TachyPosition, TachyTarget, TachyTask, TachySensor, TachyStation
+from django.contrib import admin
 from tasks.admin import TimeWindowInline
 
 # Register your models here.

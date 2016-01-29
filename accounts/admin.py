@@ -1,6 +1,5 @@
-from django.contrib import admin
-
 from sensors.tachy.admin import TachyTargetInline, TachyPositionInline
+from django.contrib import admin
 from .models import Project, Membership, Box, User
 
 # Register your models here.

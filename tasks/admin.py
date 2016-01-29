@@ -1,7 +1,9 @@
-from django.contrib import admin
-from models import TimeWindow
 from bitfield import BitField
 from bitfield.forms import BitFieldCheckboxSelectMultiple
+
+from models import TimeWindow
+from django.contrib import admin
+
 
 # Register your models here.
 

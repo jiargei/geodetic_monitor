@@ -23,13 +23,18 @@ def run():
                     }
                 }
             }
+        },
+        "aggs": {
+            "avg_easting": {
+                "avg": {"field": "easting"}
+            }
         }
     }
     sq = es.search(index="dimosy", body=qdsl)
     pprint.pprint(sq)
 
 
-if __name__ == "__main__"
+if __name__ == "__main__":
     """
     Zapalot!
     """

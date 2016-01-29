@@ -1,12 +1,10 @@
 from __future__ import unicode_literals
 
-from django.contrib.auth.models import AbstractUser
-from django.contrib.auth.models import User
-from django.contrib.auth.models import UserManager
-from django.db import models
-
 from common import constants
 from common import fields
+from django.contrib.auth.models import AbstractUser
+# from django.apps import User
+from django.db import models
 
 
 # Create your models here.

@@ -1,6 +1,5 @@
+from common.utils.generate import generate_id
 from django.db import models
-
-from common.utils import generate_id
 
 
 class IdField(models.Field):

@@ -1,9 +1,9 @@
 from __future__ import unicode_literals
 
 from bitfield import BitField
-from django.db import models
 
 from common import fields
+from django.db import models
 
 # Create your models here.
 

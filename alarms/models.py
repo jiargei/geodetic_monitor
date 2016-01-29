@@ -1,11 +1,11 @@
 from __future__ import unicode_literals
 
 from bitfield import BitField
-from django.db import models
 
 from accounts.models import User
 from common import constants
 from common import fields
+from django.db import models
 
 # Create your models here.
 

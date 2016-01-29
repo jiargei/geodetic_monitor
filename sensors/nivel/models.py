@@ -1,9 +1,8 @@
 from __future__ import unicode_literals
 
-from django.db import models
-
 from sensors.models import Sensor
 from sensors.nivel import constants as nc
+from django.db import models
 
 # Create your models here.
 

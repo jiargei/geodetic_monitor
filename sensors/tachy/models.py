@@ -2,13 +2,11 @@ from __future__ import unicode_literals
 
 from datetime import datetime
 
-from django.db import models
-
+from common import constants as mc
 from sensors.models import Position, Coordinate, Target, Sensor
 from sensors.tachy import constants as tc
+from django.db import models
 from tasks.models import Task
-from common import constants as mc
-from common import fields
 
 
 # Create your models here.

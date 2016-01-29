@@ -1,9 +1,8 @@
 from __future__ import unicode_literals
 
-from django.db import models
-
 from common import constants
 from common import fields
+from django.db import models
 
 # Create your models here.
 
