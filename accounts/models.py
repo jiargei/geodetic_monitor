@@ -1,13 +1,11 @@
 from __future__ import unicode_literals
 
+from django.db import models
+from django.contrib.auth.models import AbstractUser
+
 from common import constants
 from common.fields import UIDField
-from django.contrib.auth.models import AbstractUser
-# from django.apps import User
-from django.db import models
-
-
-# Create your models here.
+from common.models import UserCreatedMixin, CreatedModifiedMixin
 
 
 class User(AbstractUser):
@@ -18,7 +16,7 @@ class User(AbstractUser):
     pass
 
 
-class Project(models.Model):
+class Project(UserCreatedMixin, models.Model):
     """
 
     """
@@ -27,7 +25,8 @@ class Project(models.Model):
     description = models.CharField(max_length=255, default='')
     token = models.CharField(max_length=10, default='', unique=True)
     active = models.BooleanField(default=True)
-    members = models.ManyToManyField(User, through="accounts.Membership")
+    members = models.ManyToManyField(User, through="accounts.Membership",
+                                     related_name='projects')
 
     def __unicode__(self):
         return u"%s - %s" % (self.token, self.name)
@@ -36,7 +35,7 @@ class Project(models.Model):
         ordering = ["active", "name"]
 
 
-class Membership(models.Model):
+class Membership(CreatedModifiedMixin, models.Model):
     """
     Membership controls the user role inside a project.
 
@@ -51,8 +50,9 @@ class Membership(models.Model):
 
     """
     id = UIDField()
-    user = models.ForeignKey(User)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name='memberships')
+    project = models.ForeignKey(Project, on_delete=models.CASCADE,
+                                related_name='memberships')
     role = models.CharField(max_length=1,
                             choices=constants.USER_ROLE_CHOICES,
                             default="u")
@@ -66,7 +66,7 @@ class Membership(models.Model):
         unique_together = [("user", "project")]
 
 
-class Box(models.Model):
+class Box(UserCreatedMixin, models.Model):
     """
 
     """
