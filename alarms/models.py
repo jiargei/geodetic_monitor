@@ -4,7 +4,8 @@ from bitfield import BitField
 
 from accounts.models import User
 from common import constants
-from common import fields
+from common.fields import UIDField
+
 from django.db import models
 
 # Create your models here.
@@ -14,7 +15,7 @@ class AlarmPlan(models.Model):
     """
 
     """
-    id = fields.IdField()
+    id = UIDField()
     name = models.CharField(max_length=50)
     observation_type = models.ForeignKey("sensors.ObservationType", on_delete=models.CASCADE)
     project = models.ForeignKey("accounts.Project", on_delete=models.CASCADE)
@@ -27,7 +28,7 @@ class AlarmPhase(models.Model):
     """
 
     """
-    id = fields.IdField()
+    id = UIDField()
     alarm_plan = models.ForeignKey("AlarmPlan", on_delete=models.CASCADE)
     state = models.SmallIntegerField(default=0, choices=constants.ALARM_STATES)
     value = models.FloatField()
@@ -43,7 +44,7 @@ class UserNotification(models.Model):
     """
 
     """
-    id = fields.IdField()
+    id = UIDField()
     alarm_phase = models.ForeignKey("AlarmPhase", on_delete=models.CASCADE)
     users = models.ManyToManyField(User)
     notification_type = BitField(
@@ -59,7 +60,7 @@ class BoxNotification(models.Model):
     """
 
     """
-    id = fields.IdField()
+    id = UIDField()
     alarm_phase = models.ForeignKey("AlarmPhase", on_delete=models.CASCADE)
     boxes = models.ManyToManyField("accounts.Box")
     notification_type = BitField(

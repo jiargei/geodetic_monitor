@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 
 from common import constants
-from common import fields
+from common.fields import UIDField
 from django.db import models
 
 # Create your models here.
@@ -11,7 +11,7 @@ class ObservationType(models.Model):
     """
 
     """
-    id = fields.IdField()
+    id = UIDField()
     name = models.CharField(max_length=20, choices=constants.OBSERVATION_TYPE_CHOICES, unique=True)
     unit = models.CharField(max_length=10, choices=constants.OBSERVATION_UNIT_CHOICES)
     description = models.CharField(max_length=200)
@@ -25,7 +25,7 @@ class Sensor(models.Model):
     """
 
     """
-    id = fields.IdField()
+    id = UIDField()
     sensor_name = models.CharField(max_length=100)
     sensor_serial = models.CharField(max_length=20, unique=True)
     # sensor_type = models.PositiveSmallIntegerField(default=1, choices=constants.SENSOR_TYPE_CHOICES)
@@ -39,7 +39,7 @@ class Coordinate(models.Model):
     """
 
     """
-    id = fields.IdField()
+    id = UIDField()
     easting = models.FloatField()
     northing = models.FloatField()
     height = models.FloatField()
@@ -52,7 +52,7 @@ class Position(models.Model):
     """
 
     """
-    id = fields.IdField()
+    id = UIDField()
     name = models.CharField(max_length=50)
     project = models.ForeignKey("accounts.Project", on_delete=models.CASCADE)
 

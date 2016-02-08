@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 
 from common import constants
-from common import fields
+from common.fields import UIDField
 from django.contrib.auth.models import AbstractUser
 # from django.apps import User
 from django.db import models
@@ -22,7 +22,7 @@ class Project(models.Model):
     """
 
     """
-    id = fields.IdField()
+    id = UIDField()
     name = models.CharField(max_length=50)
     description = models.CharField(max_length=255, default='')
     token = models.CharField(max_length=10, default='', unique=True)
@@ -50,9 +50,9 @@ class Membership(models.Model):
     role: ...
 
     """
-    id = fields.IdField()
-    user = models.ForeignKey("accounts.User")
-    project = models.ForeignKey("accounts.Project", on_delete=models.CASCADE)
+    id = UIDField()
+    user = models.ForeignKey(User)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
     role = models.CharField(max_length=1,
                             choices=constants.USER_ROLE_CHOICES,
                             default="u")
@@ -70,10 +70,10 @@ class Box(models.Model):
     """
 
     """
-    id = fields.IdField()
+    id = UIDField()
     name = models.CharField(max_length=15)
     url = models.URLField()
-    project = models.ForeignKey("accounts.Project", blank=True, null=True, on_delete=models.SET_NULL)
+    project = models.ForeignKey(Project, blank=True, null=True, on_delete=models.SET_NULL)
 
     def __unicode__(self):
         return u"%s (%s)" % (self.name, self.project)  # b1 = Box(name="Cygnus"); print b1 -> "Cygnus (BEAX)"

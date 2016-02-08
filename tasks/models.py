@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 
 from bitfield import BitField
 
-from common import fields
+from common.fields import UIDField
 from django.db import models
 
 # Create your models here.
@@ -12,7 +12,7 @@ class TimeWindow(models.Model):
     """
 
     """
-    id = fields.IdField()
+    id = UIDField()
     active = models.BooleanField(default=True)
     task = models.ForeignKey("Task", on_delete=models.CASCADE)
     start_time = models.TimeField()
@@ -36,6 +36,6 @@ class Task(models.Model):
     """
 
     """
-    id = fields.IdField()
+    id = UIDField()
     active = models.BooleanField(default=True)
 
