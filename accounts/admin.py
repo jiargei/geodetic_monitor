@@ -37,19 +37,24 @@ class CustomUserAdmin(UserAdmin):
 
 @admin.register(Membership)
 class MembershipAdmin(admin.ModelAdmin):
-    list_display = ('user', 'role', 'project')
+    list_display = ('user', 'role', 'project', 'created')
     list_select_related = ('user', 'project')
-    list_filter = ('role',)
+    list_filter = ('role', 'created')
     search_fields = ('user__username', 'project__name')
 
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
+    list_display = ('name', 'created', 'creator')
     inlines = [MembershipInline, TachyPositionInline, TachyTargetInline, BoxInline]
+    list_filter = ('created',)
+    search_fields = ('name', 'creator__username')
 
 
 @admin.register(Box)
 class BoxAdmin(admin.ModelAdmin):
-    # inlines = [BoxNotification]
-    pass
+    list_display = ('name', 'project', 'created', 'creator')
+    list_select_related = ('project', 'creator')
+    list_filter = ('created',)
+    search_fields = ('name', 'project__name', 'creator__username')
 
