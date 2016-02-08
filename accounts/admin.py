@@ -1,5 +1,8 @@
-from sensors.tachy.admin import TachyTargetInline, TachyPositionInline
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+
+from sensors.tachy.admin import TachyTargetInline, TachyPositionInline
+
 from .models import Project, Membership, Box, User
 
 # Register your models here.
@@ -16,7 +19,7 @@ class BoxInline(admin.TabularInline):
 
 
 @admin.register(User)
-class CustomUserAdmin(admin.ModelAdmin):
+class CustomUserAdmin(UserAdmin):
     inlines = [MembershipInline]
 
 
