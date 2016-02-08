@@ -23,8 +23,6 @@ SECRET_KEY = 'sg(^0!@l%8b%=x93yqmq3ekiqynf0hyi30264ro+10h7%db2^u'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-TEMPLATE_DEBUG = True
-
 ALLOWED_HOSTS = []
 
 
