@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 from common import constants
 from common.fields import UIDField
+from common.models import CreatedModifiedMixin
 from django.db import models
 
 # Create your models here.
@@ -48,6 +49,13 @@ class Coordinate(models.Model):
         abstract = True
 
 
+class Station(Coordinate):
+    postion = models.ForeignKey('sensors.Position')
+    sensor = models.ForeignKey('sensors.Sensor')
+    from_date = models.DateTimeField()
+    to_date = models.DateTimeField()
+
+
 class Position(models.Model):
     """
 
@@ -55,9 +63,15 @@ class Position(models.Model):
     id = UIDField()
     name = models.CharField(max_length=50)
     project = models.ForeignKey("accounts.Project", on_delete=models.CASCADE)
+    sensors = models.ManyToManyField(Sensor, through=Station)
 
     def __unicode__(self):
         return u"%s-%s" % (self.project.token, self.name)
+
+
+class Reference(models.Model):
+    position = models.ForeignKey(Position)
+    target = models.ForeignKey('sensors.Target')
 
 
 class Target(Coordinate):
@@ -66,6 +80,7 @@ class Target(Coordinate):
     """
     name = models.CharField(max_length=20)
     project = models.ForeignKey("accounts.Project", on_delete=models.CASCADE)
+    positions = models.ManyToManyField(Position, through=Reference)
 
     def __unicode__(self):
         return u"%s-%s" % (self.project.token, self.name)

@@ -1,11 +1,13 @@
 from __future__ import unicode_literals
 
+from django.db import models
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+
 from bitfield import BitField
 
 from common.fields import UIDField
-from django.db import models
 
-# Create your models here.
 
 
 class TimeWindow(models.Model):
@@ -14,7 +16,7 @@ class TimeWindow(models.Model):
     """
     id = UIDField()
     active = models.BooleanField(default=True)
-    task = models.ForeignKey("Task", on_delete=models.CASCADE)
+    task = models.ForeignKey("Task", related_name='time_windows')
     start_time = models.TimeField()
     end_time = models.TimeField()
     frequency = models.DecimalField(default=10., max_digits=4, decimal_places=1)
@@ -38,4 +40,10 @@ class Task(models.Model):
     """
     id = UIDField()
     active = models.BooleanField(default=True)
+
+    object_id = models.CharField(max_length=10, db_index=True)
+    content_type = models.ForeignKey(ContentType)
+    task_object = GenericForeignKey(ct_field='content_type', fk_field='object_id')
+
+
 
