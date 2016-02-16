@@ -17,7 +17,7 @@ class AlarmPlan(models.Model):
     """
     id = UIDField()
     name = models.CharField(max_length=50)
-    observation_type = models.ForeignKey("sensors.ObservationType", on_delete=models.CASCADE)
+    observation_type = models.ForeignKey("metering.ObservationType", on_delete=models.CASCADE)
     project = models.ForeignKey("accounts.Project", on_delete=models.CASCADE)
 
     def __unicode__(self):

@@ -4,7 +4,7 @@
 import time
 
 # Package Import
-from sensors.tachy.hardware.tachy import Tachy
+from sensors.tachy.base import Tachy
 import tmc
 import aut
 import geocom

@@ -7,6 +7,7 @@ from abc import abstractmethod
 import time
 from common.utils import angle
 
+from sensor.base import Sensor
 # Code
 
 FACE_ONE = 0
@@ -21,7 +22,7 @@ def not_implemented_field(self):
     raise NotImplementedError
 
 
-class Tachy(object):
+class Tachy(Sensor):
     """
     Abstrakte Klasse für Tachymeter
     """

@@ -11,6 +11,5 @@ from django.conf.urls import include, url
 #                        )
 
 urlpatterns = [
-    url(r'^sensors/tachy/', include('sensors.tachy.urls')),
     url(r'^admin/', include(admin.site.urls)),
 ]

@@ -38,9 +38,7 @@ INSTALLED_APPS = (
     'django_extensions',
     'accounts',
     'alarms',
-    'sensors',
-    'sensors.tachy',
-    'sensors.nivel',
+    'metering',
     'tasks',
 )
 
