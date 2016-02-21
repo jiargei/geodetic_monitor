@@ -119,6 +119,9 @@ TEMPLATES = [
     },
 ]
 
+
+LOGIN_REDIRECT_URL = 'project-list'
+
 ROLLBAR = {
     'access_token': '4b848a2edb694790923a1c8146a24b8f',
     'environment': 'development' if DEBUG else 'production',
