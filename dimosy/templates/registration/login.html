@@ -1,0 +1,8 @@
+{% block content %}
+<h1>Login</h1>
+<form method="post" accept-charset="utf-8">
+  {{ form.as_p }}
+  {% csrf_token %}
+  <button type="submit">Login</button>
+</form>
+{% endblock %}
