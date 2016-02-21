@@ -5,7 +5,7 @@
 <ul>
   {% for membership in request.user.memberships.all %}
   <li>
-    {{ membership.project.name }} ({{ membership.get_role_display }})
+    <a href="{{ membership.project.get_absolute_url }}">{{ membership.project.name }}</a> ({{ membership.get_role_display }})
   </li>
   {% empty %}
   <li>
