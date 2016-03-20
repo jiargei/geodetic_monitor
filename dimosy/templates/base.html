@@ -1,0 +1,13 @@
+{% extends 'html.html' %}
+{% block body %}
+  <header>
+    dimosy
+    logged in as {{ request.user.username }} (<a href="{% url 'django.contrib.auth.views.logout' %}">logout</a>)
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+  <footer>
+    dimosy &copy;2016
+  </footer>
+{% endblock %}

@@ -104,6 +104,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'APP_DIRS': True,
+        'DIRS': (os.path.join(BASE_DIR, 'dimosy', 'templates'),),
         'OPTIONS': {
             'debug': DEBUG,
             'context_processors': [
@@ -115,6 +116,9 @@ TEMPLATES = [
         }
     },
 ]
+
+
+LOGIN_REDIRECT_URL = 'project-list'
 
 ROLLBAR = {
     'access_token': '4b848a2edb694790923a1c8146a24b8f',

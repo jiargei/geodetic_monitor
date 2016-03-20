@@ -1,15 +1,12 @@
 from django.contrib import admin
 from django.conf.urls import include, url
+from django.views.generic import TemplateView
 
-# urlpatterns = patterns('',
-#                        # Examples:
-#                        # url(r'^$', 'dimosy4.views.home', name='home'),
-#                        # url(r'^blog/', include('blog.urls')),
-#                        url(r'^tachy/', include('tachy.urls')),
-#                        url(r'^admin/', include(admin.site.urls)),
-#                        # url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-#                        )
+
 
 urlpatterns = [
+    url(r'^$', TemplateView.as_view(template_name='home.html'), name='home.html'),
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^accounts/', include('django.contrib.auth.urls')),
+    url(r'^', include('accounts.urls')),
 ]

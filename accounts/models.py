@@ -28,11 +28,17 @@ class Project(UserCreatedMixin, models.Model):
     members = models.ManyToManyField(User, through="accounts.Membership",
                                      related_name='projects')
 
+    class Meta:
+        ordering = ["active", "name"]
+
+
     def __unicode__(self):
         return u"%s - %s" % (self.token, self.name)
 
-    class Meta:
-        ordering = ["active", "name"]
+    @models.permalink
+    def get_absolute_url(self):
+        return 'project-detail', (), {'project_id': self.pk}
+
 
 
 class Membership(CreatedModifiedMixin, models.Model):
