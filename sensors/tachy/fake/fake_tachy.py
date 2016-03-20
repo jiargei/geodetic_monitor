@@ -8,7 +8,7 @@ from serial import PARITY_NONE
 from serial import STOPBITS_ONE
 
 # Package Import
-from sensors.tachy.hardware.tachy import Tachy
+from sensors.tachy.base import Tachy
 from sensors.tachy import constants
 
 from common.utils import generate

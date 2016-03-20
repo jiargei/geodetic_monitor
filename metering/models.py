@@ -1,11 +1,9 @@
 from __future__ import unicode_literals
+from django.db import models
 
 from common import constants
 from common.fields import UIDField
 from common.models import CreatedModifiedMixin
-from django.db import models
-
-# Create your models here.
 
 
 class ObservationType(models.Model):
@@ -50,8 +48,8 @@ class Coordinate(models.Model):
 
 
 class Station(Coordinate):
-    postion = models.ForeignKey('sensors.Position')
-    sensor = models.ForeignKey('sensors.Sensor')
+    postion = models.ForeignKey('metering.Position')
+    sensor = models.ForeignKey('metering.Sensor')
     from_date = models.DateTimeField()
     to_date = models.DateTimeField()
 
@@ -71,7 +69,7 @@ class Position(models.Model):
 
 class Reference(models.Model):
     position = models.ForeignKey(Position)
-    target = models.ForeignKey('sensors.Target')
+    target = models.ForeignKey('metering.Target')
 
 
 class Target(Coordinate):

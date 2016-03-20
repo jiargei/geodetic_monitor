@@ -2,11 +2,8 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.db.models import Count
 
-from sensors.tachy.admin import TachyTargetInline, TachyPositionInline
 
 from .models import Project, Membership, Box, User
-
-# Register your models here.
 
 
 class MembershipInline(admin.TabularInline):
@@ -20,7 +17,7 @@ class BoxInline(admin.TabularInline):
 
 
 @admin.register(User)
-class CustomUserAdmin(UserAdmin):
+class UserAdmin(UserAdmin):
     inlines = [MembershipInline]
     list_display = UserAdmin.list_display + ('num_memberships',)
 
@@ -46,7 +43,7 @@ class MembershipAdmin(admin.ModelAdmin):
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ('name', 'created', 'creator')
-    inlines = [MembershipInline, TachyPositionInline, TachyTargetInline, BoxInline]
+    inlines = [MembershipInline,BoxInline]
     list_filter = ('created',)
     search_fields = ('name', 'creator__username')
 
