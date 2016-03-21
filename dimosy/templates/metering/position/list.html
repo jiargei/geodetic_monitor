@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block content %}
+  <h1>{% trans 'Positions' %}</h1>
+  <a href="{% url 'position-create' project_id=view.membership.project.pk %}">Create new Position</a>
+  <table>
+    <tr>
+      <th>{% trans 'Name' %}</th>
+    </tr>
+    {% for position in object_list %}
+    <tr>
+      <td>{{ position.name }}</td>
+      <td><a href="{% url 'position-update' project_id=position.project_id position_id=position.pk %}">{% trans 'Edit' %}</a></td>
+      <td><a href="{% url 'position-delete' project_id=position.project_id position_id=position.pk %}">{% trans 'Delete' %}</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+{% endblock %}

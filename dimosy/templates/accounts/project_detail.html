@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
+{% load i18n %}
 {% block content %}
 <h1>{{ project.name }}</h1>
-
+<a href="{% url 'position-list' project_id=project.pk %}">{% trans "Positions" %}</a>
 {% endblock %}

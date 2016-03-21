@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block content %}
+  <h1>{% trans 'Delete' %}</h1>
+  <form method="post">
+    {% blocktrans with name=object.name %}
+    "Do you really want to delete the position '{{ name }}'?"
+    {% endblocktrans %}
+    {% csrf_token %}
+    <button type="submit">{% trans 'Delete' %}</button>
+  </form>
+{% endblock %}
