@@ -6,7 +6,7 @@ from ..models import Target
 class Update(forms.ModelForm):
     class Meta:
         model = Target
-        fields = ('name', 'easting', 'northing', 'height')
+        fields = ('name', 'easting', 'northing', 'height', )
 
     def __init__(self, *args, **kwargs):
         self.membership = kwargs.pop('membership', None)

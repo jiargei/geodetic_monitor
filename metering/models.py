@@ -39,17 +39,17 @@ class Coordinate(models.Model):
 
     """
     id = UIDField()
-    easting = models.FloatField()
-    northing = models.FloatField()
-    height = models.FloatField()
+    easting = models.FloatField(null=True, blank=True, db_index=True)
+    northing = models.FloatField(null=True, blank=True, db_index=True)
+    height = models.FloatField(null=True, blank=True, db_index=True)
 
     class Meta:
         abstract = True
 
 
 class Station(Coordinate):
-    postion = models.ForeignKey('metering.Position')
-    sensor = models.ForeignKey('metering.Sensor')
+    position = models.ForeignKey('metering.Position', related_name='stations')
+    sensor = models.ForeignKey('metering.Sensor', related_name='stations')
     from_date = models.DateTimeField()
     to_date = models.DateTimeField()
 
@@ -62,14 +62,16 @@ class Position(models.Model):
     name = models.CharField(max_length=50)
     project = models.ForeignKey("accounts.Project", on_delete=models.CASCADE)
     sensors = models.ManyToManyField(Sensor, through=Station)
+    # TODO add type : tachy etc...
+    # TODO: status
 
     def __unicode__(self):
         return u"%s-%s" % (self.project.token, self.name)
 
 
 class Reference(models.Model):
-    position = models.ForeignKey(Position)
-    target = models.ForeignKey('metering.Target')
+    position = models.ForeignKey(Position, related_name='references')
+    target = models.ForeignKey('metering.Target', related_name='references')
 
 
 class Target(Coordinate):

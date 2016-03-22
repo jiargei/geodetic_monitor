@@ -10,11 +10,14 @@ from common.fields import UIDField
 
 
 
-class TimeWindow(models.Model):
+class Task(models.Model):
     """
 
     """
     id = UIDField()
+    object_id = models.CharField(max_length=10, db_index=True)
+    content_type = models.ForeignKey(ContentType)
+    task_object = GenericForeignKey(ct_field='content_type', fk_field='object_id')
     active = models.BooleanField(default=True)
     task = models.ForeignKey("Task", related_name='time_windows')
     start_time = models.TimeField()
@@ -31,19 +34,9 @@ class TimeWindow(models.Model):
     ))
 
     def __unicode__(self):
-        return "von %s, bis %s, alle %.1f Minten" % (self.start_time, self.end_time, self.frequency)
+        return u"von %s, bis %s, alle %s Minten" % (self.start_time, self.end_time, self.frequency)
 
 
-class Task(models.Model):
-    """
-
-    """
-    id = UIDField()
-    active = models.BooleanField(default=True)
-
-    object_id = models.CharField(max_length=10, db_index=True)
-    content_type = models.ForeignKey(ContentType)
-    task_object = GenericForeignKey(ct_field='content_type', fk_field='object_id')
 
 
 
