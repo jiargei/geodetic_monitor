@@ -1,9 +1,11 @@
 {% extends 'base.html' %}
 {% load i18n %}
 {% block content %}
+<div class="page-header">
   <h1>{% trans 'Edit' %}</h1>
+</div>
   <form method="post">
-    {{ form.as_p }}
+    {{ form.as_table }}
     {% csrf_token %}
     <button type="submit">{% trans 'Save' %}</button>
   </form>

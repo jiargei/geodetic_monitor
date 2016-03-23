@@ -3,7 +3,7 @@
 {% block content %}
   <h1>{% trans 'Edit' %}</h1>
   <form method="post">
-    {{ form.as_p }}
+    {{ form.as_table }}
     {% csrf_token %}
     <button type="submit">{% trans 'Save' %}</button>
   </form>

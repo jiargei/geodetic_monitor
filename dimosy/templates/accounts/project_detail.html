@@ -1,7 +1,12 @@
 {% extends 'base.html' %}
 {% load i18n %}
 {% block content %}
-<h1>{{ project.name }}</h1>
+<div class="page-header">
+    <h1>{{ project.name }} ({{ project.token }})</h1>
+</div>
+
+<p> {{ project.description }} </p>
+
 <a href="{% url 'position-list' project_id=project.pk %}">{% trans "Positions" %}</a>
 <a href="{% url 'target-list' project_id=project.pk %}">{% trans "Targets" %}</a>
 {% endblock %}

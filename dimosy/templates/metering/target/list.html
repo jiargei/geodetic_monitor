@@ -3,7 +3,7 @@
 {% block content %}
   <h1>{% trans 'Targets' %}</h1>
   <a href="{% url 'target-create' project_id=view.membership.project.pk %}">Create new Target</a>
-  <table>
+  <table class="table">
     <tr>
       <th>{% trans 'Name' %}</th>
     </tr>

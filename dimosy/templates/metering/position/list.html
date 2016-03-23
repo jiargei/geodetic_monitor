@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% load i18n %}
 {% block content %}
-  <h1>{% trans 'Positions' %}</h1>
+  <div class="page-header"><h1>{% trans 'Positions' %}</h1></div>
   <a href="{% url 'position-create' project_id=view.membership.project.pk %}">Create new Position</a>
-  <table>
+  <table class="table">
     <tr>
       <th>{% trans 'Name' %}</th>
     </tr>
