@@ -7,7 +7,7 @@ from abc import abstractmethod
 import time
 from common.utils import angle
 
-from sensor.base import Sensor
+from sensors.base import Sensor
 # Code
 
 FACE_ONE = 0

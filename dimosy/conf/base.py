@@ -43,6 +43,7 @@ INSTALLED_APPS = (
     'tasks',
 )
 
+
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -127,3 +128,7 @@ ROLLBAR = {
     'root': BASE_DIR,
 }
 # rollbar.init(**ROLLBAR)
+
+SENSORS = (
+    'sensors.tachy.leica.tps_1100.TPS1100',
+)
