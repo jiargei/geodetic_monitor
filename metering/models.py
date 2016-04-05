@@ -5,6 +5,8 @@ from common import constants
 from common.fields import UIDField
 from common.models import CreatedModifiedMixin
 
+from .utils import get_sensor_type_choices, get_sensor_model_choices
+
 
 class ObservationType(models.Model):
     """
@@ -27,7 +29,9 @@ class Sensor(models.Model):
     id = UIDField()
     sensor_name = models.CharField(max_length=100)
     sensor_serial = models.CharField(max_length=20, unique=True)
-    # sensor_type = models.PositiveSmallIntegerField(default=1, choices=constants.SENSOR_TYPE_CHOICES)
+    sensor_model = models.CharField(db_index=True, blank=True, null=True,
+                                   choices=get_sensor_model_choices(),
+                                   max_length=80)
 
     def __unicode__(self):
         # return u"%s-%s" % (dict(constants.SENSOR_TYPE_CHOICES).get(self.sensor_type), self.sensor_name)
@@ -62,8 +66,12 @@ class Position(models.Model):
     name = models.CharField(max_length=50)
     project = models.ForeignKey("accounts.Project", on_delete=models.CASCADE)
     sensors = models.ManyToManyField(Sensor, through=Station)
-    # TODO add type : tachy etc...
-    # TODO: status
+    status = models.PositiveSmallIntegerField(default=constants.STATUS_ACTIVE,
+                                              choices=constants.STATUS_CHOICES,
+                                              db_index=True)
+    sensor_type = models.CharField(db_index=True, blank=True, null=True,
+                                   choices=get_sensor_type_choices(),
+                                   max_length=16)
 
     def __unicode__(self):
         return u"%s-%s" % (self.project.token, self.name)
@@ -81,6 +89,9 @@ class Target(Coordinate):
     name = models.CharField(max_length=20)
     project = models.ForeignKey("accounts.Project", on_delete=models.CASCADE)
     positions = models.ManyToManyField(Position, through=Reference)
+    status = models.PositiveSmallIntegerField(default=constants.STATUS_ACTIVE,
+                                              choices=constants.STATUS_CHOICES,
+                                              db_index=True)
 
     def __unicode__(self):
         return u"%s-%s" % (self.project.token, self.name)

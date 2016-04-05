@@ -21,6 +21,9 @@ class Project(UserCreatedMixin, models.Model):
 
     """
     id = UIDField()
+    status = models.PositiveSmallIntegerField(default=constants.STATUS_ACTIVE,
+                                              choices=constants.STATUS_CHOICES,
+                                              db_index=True)
     name = models.CharField(max_length=50)
     description = models.CharField(max_length=255, default='')
     token = models.CharField(max_length=10, default='', unique=True)
@@ -77,6 +80,9 @@ class Box(UserCreatedMixin, models.Model):
 
     """
     id = UIDField()
+    status = models.PositiveSmallIntegerField(default=constants.STATUS_ACTIVE,
+                                              choices=constants.STATUS_CHOICES,
+                                              db_index=True)
     name = models.CharField(max_length=15)
     url = models.URLField()
     project = models.ForeignKey(Project, blank=True, null=True, on_delete=models.SET_NULL)

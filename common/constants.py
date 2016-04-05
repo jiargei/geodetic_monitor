@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
+from django.utils.translation import ugettext_lazy as _
 # from constants_web import * # -> constants.RGB_COLOR
 # import constants_web # -> constants.constants_web.RGB_COLOR
 
@@ -53,4 +53,12 @@ OBSERVATION_TYPE_CHOICES = (
     ('dS', u'Streckenänderung'),
     ('dHz', u'Änderung Horizontalwinkel'),
     ('dV', u'Änderung Vertikalwinkel'),
+)
+
+STATUS_ACTIVE = 16
+STATUS_INACTIVE = 0
+
+STATUS_CHOICES = (
+    (STATUS_ACTIVE, _('active')),
+    (STATUS_INACTIVE, _('inactive'))
 )
