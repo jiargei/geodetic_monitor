@@ -10,4 +10,5 @@ urlpatterns = [
     url(r'^accounts/', include('django.contrib.auth.urls')),
     url(r'^', include('accounts.urls')),
     url(r'^', include('metering.urls')),
+    url(r'^', include('tasks.urls')),
 ]
