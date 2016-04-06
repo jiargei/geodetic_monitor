@@ -11,8 +11,7 @@ from accounts.models import Project
 from common.fields import UIDField
 
 
-
-class Task(models.Model):
+class PeriodicTask(models.Model):
     """
 
     """
@@ -22,14 +21,15 @@ class Task(models.Model):
     start_time = models.TimeField()
     end_time = models.TimeField()
     frequency = models.DecimalField(default=10., max_digits=4, decimal_places=1)
+
     day_of_week = BitField(flags=(
-        _('Montag'),
-        _('Dienstag'),
-        _('Mittwoch'),
-        _('Donnerstag'),
-        _('Freitag'),
-        _('Samstag'),
-        _('Sonntag'),
+        ("0", _('monday')),
+        ("1", _('tuesday')),
+        ("2", _('wednesday')),
+        ("3", _('thursday')),
+        ("4", _('friday')),
+        ("5", _('saturday')),
+        ("6", _('sunday')),
     ))
 
     object_id = models.CharField(max_length=10, db_index=True)
@@ -41,7 +41,18 @@ class Task(models.Model):
             self.start_time, self.end_time, self.frequency
         )
 
+    def is_due(self):
+        """
+
+        :return: True, if task should be executed, else False
+        :rtype: bool
+        """
+        return False
 
 
+    class Task(models.Model):
+        """
 
-
+        """
+        def is_due(self):
+            return True

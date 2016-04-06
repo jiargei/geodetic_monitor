@@ -5,19 +5,28 @@ import time
 
 # Package Import
 from leica_tachy import LeicaTachy
-from dimosy.TACHY import GEOCOM
-from dimosy.TACHY.CONS import MAIN
-from dimosy.TACHY.LEICA import TMC
-from dimosy.TACHY.LEICA import BAP
-from dimosy import VARS
+from sensors.tachy.leica import geocom
+from sensors.tachy import base
+from sensors.tachy.leica import tmc
+from sensors.tachy.leica import bap
+# from dimosy import VARS
 # from dimosy import TOOLS
-from dimosy.TOOLS import GENERATES
+# from dimosy.TOOLS import GENERATES
 
 
 class TPS1100(LeicaTachy):
     """
 
     """
+
+    def __init__(self, tps):
+        """
+
+        :param tps:
+        :type tps: ??  # TODO
+        :return:
+        """
+        self.tps = tps
 
     def get_model_id(self):
         return 11
@@ -243,11 +252,11 @@ class TPS1100(LeicaTachy):
         :return:
         """
 
-        assert value in [MAIN.ON, MAIN.OFF]
-        if value == MAIN.ON:
+        assert value in [base.ON, base.OFF]
+        if value == base.ON:
             tmp = self.tps.EDM_Laserpointer_ON()
 
-        elif value == MAIN.OFF:
+        elif value == base.OFF:
             tmp = self.tps.EDM_Laserpointer_OFF()
 
         self.__laserpointer = value
@@ -260,15 +269,15 @@ class TPS1100(LeicaTachy):
         :return:
         """
         setter_dict = ["self.TMC_DoMeasure(TMC.TMC_CLEAR, EDM.EDM_SINGLE_TAPE)",
-                       "self.TMC_DoMeasure(%d, %d)" % (TMC.TMC_DEF_DIST, TMC.TMC_AUTO_INC)]
+                       "self.TMC_DoMeasure(%d, %d)" % (tmc.TMC_DEF_DIST, tmc.TMC_AUTO_INC)]
 
-        getter_dict = ["self.TMC_GetSimpleMea(%d, %d)" % (MAIN.WAIT_TIME, TMC.TMC_AUTO_INC),
+        getter_dict = ["self.TMC_GetSimpleMea(%d, %d)" % (base.WAIT_TIME, tmc.TMC_AUTO_INC),
                        "self.TMC_DoMeasure(TMC.TMC_CLEAR, EDM.EDM_SINGLE_TABE"]
 
         tmp = self.tps.do_dict(setter_dict=setter_dict,
                                getter_dict=getter_dict,
-                               command_retry=MAIN.COMMAND_RETRIES,
-                               command_wait=MAIN.COMMAND_WAIT)
+                               command_retry=base.COMMAND_RETRIES,
+                               command_wait=base.COMMAND_WAIT)
 
         return {"SLOPE_DISTANCE": tmp["SLOPE_DISTANCE"]}
 
@@ -344,8 +353,8 @@ class TPS1100(LeicaTachy):
         """
         # Versuche wiederholt, mit dem Tachymeter Kontakt herzustellen
         try_to_connect = 0
-        while not self.tps.COM_NullProc() and try_to_connect <= VARS.NULL_PRO_RETRY_ATTEMP:
-            time.sleep(VARS.NULL_PRO_RETRY_TIME)
+        while not self.tps.COM_NullProc() and try_to_connect <= base.NULL_PRO_RETRY_ATTEMP:
+            time.sleep(base.NULL_PRO_RETRY_TIME)
             try_to_connect += 1
         return self.tps.COM_NullProc()
 

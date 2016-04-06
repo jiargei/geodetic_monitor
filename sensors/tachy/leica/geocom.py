@@ -7,7 +7,7 @@ import aut
 import bap
 import tmc
 from returncodes import RETURNCODES
-from sensors.tachy.hardware.tachy import ON
+from sensors.tachy.base import ON
 
 __author__ = 'jurgen'
 
@@ -521,7 +521,7 @@ class COM_SwitchOffTPS(GeoCOMCommand):
     :return: If query succeeded or not
     """
 
-    def __init__(self, on_off=NO):
+    def __init__(self, on_off=ON):
         self.__on_off = on_off
 
     @property

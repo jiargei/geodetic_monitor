@@ -86,6 +86,7 @@ class Box(UserCreatedMixin, models.Model):
     name = models.CharField(max_length=15)
     url = models.URLField()
     project = models.ForeignKey(Project, blank=True, null=True, on_delete=models.SET_NULL)
+    # TODO ports
 
     def __unicode__(self):
         return u"%s (%s)" % (self.name, self.project)  # b1 = Box(name="Cygnus"); print b1 -> "Cygnus (BEAX)"

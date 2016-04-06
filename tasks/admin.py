@@ -8,10 +8,8 @@ from django.contrib import admin
 # Register your models here.
 
 
-class Task(admin.TabularInline):
-    model = Task
-    extra = 1
+@admin.register(Task)
+class TaskAdmin(admin.ModelAdmin):
     formfield_overrides = {
         BitField: {'widget': BitFieldCheckboxSelectMultiple},
     }
-

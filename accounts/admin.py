@@ -43,7 +43,7 @@ class MembershipAdmin(admin.ModelAdmin):
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ('name', 'created', 'creator')
-    inlines = [MembershipInline,BoxInline]
+    inlines = [MembershipInline, BoxInline]
     list_filter = ('created',)
     search_fields = ('name', 'creator__username')
 

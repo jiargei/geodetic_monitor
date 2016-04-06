@@ -16,6 +16,14 @@ FACE_TWO = 1
 ON = 1
 OFF = 0
 
+WAIT_TIME = 5
+
+COMMAND_RETRIES = 3
+COMMAND_WAIT = 5
+
+NULL_PRO_RETRY_ATTEMP = 3
+NULL_PRO_RETRY_TIME = 30
+
 
 @property
 def not_implemented_field(self):
