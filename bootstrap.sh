@@ -21,11 +21,11 @@ python manage.py migrate
 
 # ELK Stack
 
-elastic_folder='/opt/elastic'
+elastic_folder='/opt/elastic/'
 sudo mkdir -p $elastic_folder
-sudo wget https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/2.3.1/elasticsearch-2.3.1.tar.gz -p $elastic_folder
-sudo wget https://download.elastic.co/logstash/logstash/logstash-2.3.0.tar.gz -p $elastic_folder
-sudo wget https://download.elastic.co/kibana/kibana/kibana-4.5.0-linux-x64.tar.gz -p $elastic_folder
-cd $elastic_folder
-sudo tar -xzf *.tar.gz
+sudo wget -P $elastic_folder https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/2.3.1/elasticsearch-2.3.1.tar.gz
+sudo wget -P $elastic_folder https://download.elastic.co/logstash/logstash/logstash-2.3.0.tar.gz
+sudo wget -P $elastic_folder https://download.elastic.co/kibana/kibana/kibana-4.5.0-linux-x64.tar.gz
+sudo tar -xzf *.tar.gz -C $elastic_folder
+
 

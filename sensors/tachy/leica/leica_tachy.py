@@ -12,6 +12,8 @@ import geocom
 
 class LeicaTachy(Tachy):
 
+    brand = "Leica Geosystems"
+
     def __init__(self, serial):
         """
 
@@ -37,6 +39,15 @@ class LeicaTachy(Tachy):
         self.serial.write(str(geocom_command))
         geocom_command.set_serial_read(self.serial.readline())
         return geocom_command.execute()
+
+    def get_measurement(self):
+        """
+
+        :return:
+        """
+        self.communicate(geocom.TMC_DoMeasure(tmc.TMC_CLEAR))
+        self.communicate(geocom.TMC_DoMeasure(tmc.TMC_DEF_DIST))
+        return self.communicate(geocom.TMC_GetSimpleMea())
 
     def fine_adjust(self):
         """
@@ -96,7 +107,6 @@ class LeicaTachy(Tachy):
         :return:
         """
         self.communicate(geocom.BAP_SetPrismType(prism_type=value))
-
 
     def set_compensator_cross(self, value):
         """

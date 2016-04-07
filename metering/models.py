@@ -32,9 +32,8 @@ class Sensor(models.Model):
     sensor_name = models.CharField(max_length=100)
     sensor_serial = models.CharField(max_length=20, unique=True)
     sensor_model = models.CharField(db_index=True, blank=True, null=True,
-                                   choices=get_sensor_model_choices(),
-                                   max_length=80)
-
+                                    choices=get_sensor_model_choices(),
+                                    max_length=80)
 
     def __unicode__(self):
         # return u"%s-%s" % (dict(constants.SENSOR_TYPE_CHOICES).get(self.sensor_type), self.sensor_name)
@@ -60,13 +59,14 @@ class Coordinate(models.Model):
 class Station(Coordinate):
     position = models.ForeignKey('metering.Position', related_name='stations')
     sensor = models.ForeignKey('metering.Sensor', related_name='stations')
+    box = models.ForeignKey('accounts.Box', related_name='box')
+    port = models.FileField(upload_to='/dev/')
     from_date = models.DateTimeField(default=utc.now, db_index=True)
     to_date = models.DateTimeField(db_index=True)
 
     class Meta:
         ordering = ['-from_date']
         get_latest_by = "from_date"
-
 
 
 class Position(models.Model):

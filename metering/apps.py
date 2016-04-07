@@ -14,4 +14,3 @@ class Metering(AppConfig):
     def ready(self, *args, **kwargs):
         for s in getattr(settings, 'SENSORS', []):
             sensor_registry[s] = import_string(s)
-

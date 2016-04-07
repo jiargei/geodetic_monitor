@@ -1,7 +1,47 @@
+from abc import abstractproperty, ABCMeta, abstractmethod
+from uuid import uuid1
+from datetime import datetime
+
+
 class Sensor(object):
-    brand = None
-    model = None
-    sensor_type = None
+
+    __metaclass__ = ABCMeta
 
     def get_name(self):
         return "%s %s" % (self.brand, self.model)
+
+    @abstractproperty
+    def sensor_type(self):
+        pass
+
+    @abstractproperty
+    def model_type(self):
+        pass
+
+    @abstractproperty
+    def brand(self):
+        pass
+
+    @abstractproperty
+    def model(self):
+        pass
+
+    @classmethod
+    def get_sensor_type(cls):
+        return {"SENSOR_TYPE": cls.sensor_type}
+
+    @classmethod
+    def get_model_type(cls):
+        return {"MODEL_TYPE": cls.model_type}
+
+    @abstractmethod
+    def get_measurement(self):
+        pass
+
+
+def create_uid(k="UID"):
+    return {k: uuid1()}
+
+
+def create_date(k="CREATED"):
+    return {k: datetime.now()}

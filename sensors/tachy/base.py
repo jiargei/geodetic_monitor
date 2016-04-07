@@ -3,7 +3,7 @@
 
 # Third Party Module Import
 from abc import ABCMeta
-from abc import abstractmethod
+from abc import abstractmethod, abstractproperty
 import time
 from common.utils import angle
 
@@ -36,6 +36,12 @@ class Tachy(Sensor):
     """
 
     __metaclass__ = ABCMeta
+
+    sensor_type = "TACHY"
+
+    @abstractproperty
+    def model_type(self):
+        pass
 
     @abstractmethod
     def set_polar(self, horizontal_angle, vertical_angle, aim_target=False):
@@ -102,14 +108,6 @@ class Tachy(Sensor):
         Schaltet Tachymeter ein
         :return:
         """
-
-    @staticmethod
-    def get_sensor_type():
-        return {"SENSOR_TYPE": "TACHY"}
-
-    @staticmethod
-    def get_tachymeter_type():
-        return {"TACHYMETER_TYPE": "Abstract Tachymeter"}
 
     @abstractmethod
     def get_response(self):

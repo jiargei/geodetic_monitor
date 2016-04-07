@@ -23,3 +23,9 @@
 - unicode for models represantation
 - added setup to urlpatterns
 
+
+# dimosy2 2016-04-07
+
+- added Connection class
+- celery worker with single tachy measurement
+

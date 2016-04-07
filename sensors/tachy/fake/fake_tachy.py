@@ -11,6 +11,8 @@ from serial import STOPBITS_ONE
 from sensors.tachy.base import Tachy
 from sensors.tachy import constants
 
+from sensors import base as b
+
 from common.utils import generate
 
 
@@ -18,6 +20,9 @@ from common.utils import generate
 
 
 class FakeTachy(Tachy):
+
+    brand = "FaKeBrAnD"
+    model = "FaKeMoDeL"
 
     def __init__(self, device):
         self.__connected = True if device == "/dev/null" else False
@@ -49,6 +54,24 @@ class FakeTachy(Tachy):
         self.__hz_tolerance = 0.0030
         self.__v_tolerance = 0.0030
 
+    TACHYMETER_TYPE = "Fake Tachymeter"
+
+    def get_measurement(self):
+        d = {
+            "HORIZONTAL_ANGLE": self.__horizontal_angle + random.random()*1e-4,
+            "VERTICAL_ANGLE": self.__vertical_angle + random.random()*1e-4,
+            "SLOPE_DISTANCE": self.__slope_distance + random.random()*1e-3,
+        }
+        d.update(b.create_date())
+        d.update(b.create_uid())
+        return d
+
+    def get_search_windows(self):
+        return {
+            "SEARCH_VERTICAL": 0.,
+            "SEARCH_HORIZONTAL": 0.,
+        }
+
     def get_model_id(self):
         return 19
 
@@ -66,9 +89,6 @@ class FakeTachy(Tachy):
         """
         print "Switch ON"
 
-    @staticmethod
-    def get_tachymeter_type():
-        return {"TACHYMETER_TYPE": "Fake Tachymeter"}
 
     def get_response(self):
         return self.__connected

@@ -19,6 +19,8 @@ class TPS1100(LeicaTachy):
 
     """
 
+    model = "TPS1100"
+
     def __init__(self, tps):
         """
 
@@ -27,6 +29,7 @@ class TPS1100(LeicaTachy):
         :return:
         """
         self.tps = tps
+        super(TPS1100, self).__init__()
 
     def get_model_id(self):
         return 11

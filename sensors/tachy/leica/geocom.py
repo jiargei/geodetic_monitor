@@ -349,6 +349,38 @@ class TMC_GetFace(GeoCOMCommand):
     GEOCOM_PARAMETERS = ['FACE']
 
 
+class TMC_GetSimpleMea(GeoCOMCommand):
+    """
+    ASCII-Request: %R1Q,2108:WaitTime[long],Mode[long]\n
+    ASCII-Response: %R1P,0,0:RC,Hz[double],V[double],SlopeDistance[double]\n
+    Remarks: \n
+    This function returns the angles and distance measurement data. This command does not issue a new distance
+    measurement. A distance measurement has to be started in advance. If a distance measurement is valid the
+    function ignores WaitTime and returns the results. If no valid distance measurement is available and the
+    distance measurement unit is not activated (by TMC_DoMeasure before the TMC_GetSimpleMea call) the angle
+    measurement result is returned after the waittime. Information about distance measurement is returned in the
+    return code.
+    """
+
+    def __init__(self, wait_time=5000, inclination_measurement_mode=tmc.TMC_MEA_INC):
+        """
+
+        :param wait_time:
+        :type wait_time: int
+        :param inclination_measurement_mode:
+        :type inclination_measurement_mode: int
+        :return:
+        """
+        self.__wait_time = wait_time
+        self.__inclination_measurement_mode = inclination_measurement_mode
+
+    @property
+    def GEOCOM_QUERY(self):
+        return "2108:%d,%d" % (self.__wait_time, self.__inclination_measurement_mode)
+
+    GEOCOM_PARAMETERS = ["HORIZONTAL_ANGLE", "VERTICAL_ANGLE", "SLOPE_DISTANCE"]
+
+
 class TMC_SetOrientation(GeoCOMCommand):
     """
     ASCII-Request: %R1Q,2113:HzOrientation[double]\n

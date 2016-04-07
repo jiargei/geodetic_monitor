@@ -1,5 +1,6 @@
 from .apps import sensor_registry
 
+
 def get_sensor_type_choices():
     return []
 
