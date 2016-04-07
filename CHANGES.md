@@ -26,6 +26,6 @@
 
 # dimosy2 2016-04-07
 
-- added Connection class
+- added Port and Box to Station class
 - celery worker with single tachy measurement
 
