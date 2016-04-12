@@ -34,6 +34,10 @@ class Sensor(object):
     def get_model_type(cls):
         return {"MODEL_TYPE": cls.model_type}
 
+    @classmethod
+    def get_brand(cls):
+        return {"BRAND": cls.brand}
+
     @abstractmethod
     def get_measurement(self):
         pass
