@@ -1,1 +1,2 @@
+import leica_tachy
 import leica_tachy_tps1100

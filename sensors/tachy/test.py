@@ -1,12 +1,18 @@
 import unittest
 import serial
+import logging
+import time
 
 from leica.leica_tachy_tps1100 import TPS1100
+from base import FACE_ONE, FACE_TWO
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class LeicaTPS1100TachyTestCase(unittest.TestCase):
 
-    def __init__(self, testname="runTest", port='/dev/ttyMXUSB1'):
+    def __init__(self, testname="runTest", port='/dev/ttyMXUSB0'):
         super(LeicaTPS1100TachyTestCase, self).__init__(testname)
         self.port = port
 
@@ -14,23 +20,37 @@ class LeicaTPS1100TachyTestCase(unittest.TestCase):
         s = serial.Serial(port=self.port)
         if not s.isOpen():
             s.open()
-        self.sensor = TPS1100(serial=s)
+        self.sensor = TPS1100(rs232=s)
 
     def test_brand(self):
+        logger.debug("Testing brand 'Leica Geosystems'")
         r = self.sensor.get_brand()
         self.assertEqual(r["BRAND"], "Leica Geosystems",
                          msg="Sensor should be froom Leica Geosystems, got %s instead" % self.sensor.brand)
 
     def test_get_sensor_type(self):
+        logger.debug("Testing sensor type 'TACHY'")
         r = self.sensor.get_sensor_type()
         self.assertEqual(r["SENSOR_TYPE"], "TACHY",
                          msg="Sensor should be a TACHY, got %s instead" % self.sensor.sensor_type)
 
     def test_get_response(self):
+        logger.debug("Testing sensor NULL response")
         r = self.sensor.get_response()
-        self.assertTrue(r["status"] == 200, msg="Statuscode ist nicht 200")
+        self.assertTrue(r["status"] == 200, msg="Statuscode is not 200")
 
     def test_get_sensor_name(self):
+        logger.debug("Testing sensor name")
         r = self.sensor.get_instrument_name()
-        self.assertTrue("TPS" in r["INSTRUMENT_NAME"],
+        logger.debug(r)
+        self.assertTrue("T" in r["INSTRUMENT_NAME"],
                         msg="Sensor should be a TPS1100, got %s instead" % r["INSTRUMENT_NAME"])
+
+    def test_change_face(self):
+        logger.debug("Change tachy face")
+        self.sensor.set_face(FACE_TWO)
+        self.assertEqual(str(FACE_TWO), self.sensor.get_face()["FACE"])
+        logger.debug("Wait a few seconds")
+        time.sleep(7)
+        self.sensor.set_face(FACE_ONE)
+        self.assertEqual(str(FACE_ONE), self.sensor.get_face()["FACE"])

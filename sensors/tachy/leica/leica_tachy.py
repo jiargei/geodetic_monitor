@@ -4,23 +4,40 @@
 import time
 
 # Package Import
-from sensors.tachy.base import Tachy
+from ..base import Tachy, ON, OFF
 import tmc
 import aut
 import geocom
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 
 class LeicaTachy(Tachy):
 
     brand = "Leica Geosystems"
 
-    def __init__(self, serial):
+    @property
+    def model_type(self):
+        return "GeoCOM"
+
+    def __init__(self, rs232, **kwargs):
         """
 
-        :param serial: Serial
+        :param rs232: serial.Serial
         :return:
         """
-        self.serial = serial
+        self.rs232 = rs232
+        super(LeicaTachy, self).__init__(**kwargs)
+
+    def is_leveled(self):
+        """
+
+        :return:
+        """
+        # TODO ..
+        return True
 
     def clear(self):
         """
@@ -36,8 +53,12 @@ class LeicaTachy(Tachy):
         :param geocom_command: GeoCOMCommand
         :return:
         """
-        self.serial.write(str(geocom_command))
-        geocom_command.set_serial_read(self.serial.readline())
+        logger.debug("Write %s, %s" % (geocom_command.__class__, str(geocom_command)))
+        logger.debug(geocom_command.GEOCOM_PARAMETERS)
+        self.rs232.write(str(geocom_command))
+        geocom_command.set_serial_read(self.rs232.readline())
+        logger.debug("Got this: %s" % geocom_command.get_serial_read())
+
         return geocom_command.execute()
 
     def get_measurement(self):
@@ -70,13 +91,13 @@ class LeicaTachy(Tachy):
         return self.communicate(geocom.TMC_GetHeight())
 
     def set_station(self, easting, northing, height, instrument_height):
-        return self.communicate(geocom.TMC_SetStation(easting, northing, height))
+        return self.communicate(geocom.TMC_SetStation(easting, northing, height, instrument_height))
 
     def get_station(self):
         return self.communicate(geocom.TMC_GetStation())
 
     def set_face(self, value):
-        while value != self.communicate(geocom.TMC_GetFace())['FACE']:
+        while str(value) != self.communicate(geocom.TMC_GetFace())['FACE']:
             cmd = self.communicate(geocom.AUT_ChangeFace())
             time.sleep(1)
 
@@ -167,3 +188,112 @@ class LeicaTachy(Tachy):
         :return:
         """
         return self.communicate(geocom.CSV_GetInstrumentNo())
+
+    def get_angles(self, use_atr=True):
+        """
+
+        :param use_atr:
+        :return:
+        """
+        if use_atr:
+            self.communicate(geocom.AUT_FineAdjust(search_hz=self.search_hz,
+                                                   search_v=self.search_v))
+        get_angle = self.communicate(geocom.TMC_GetAngle5())
+
+        return get_angle
+
+    def get_search_windows(self):
+        """
+
+        :return:
+        """
+        return {"SEARCH_HZ": self.search_hz,
+                "SEARCH_V": self.search_v}
+
+    def set_search_windows(self, search_horizontal, search_vertical):
+        """
+
+        :param search_horizontal:
+        :param search_vertical:
+        :return:
+        """
+        self.search_hz = search_horizontal
+        self.search_v = search_vertical
+
+    def connect(self):
+        """
+
+        :return:
+        """
+        if not self.rs232.isOpen():
+            self.rs232.open()
+
+    def get_compensator(self):
+        """
+
+        :return:
+        """
+        get_angle = self.communicate(geocom.TMC_GetAngle1())
+        return {"COMPENSATOR_CROSS": get_angle["CROSS_INCLINE"],
+                "COMPENSATOR_LENGTH": get_angle["LENGTH_INCLINE"]}
+
+    def set_laser_pointer(self, value):
+        """
+
+        :param value:
+        :return:
+        """
+        if value in [ON, OFF]:
+            lp = self.communicate(geocom.EDM_SetLaserpointer(on_off=value))
+            if lp["status"] == 200:
+                self.__laserpointer_state = value
+
+        else:
+            lp = {'status': 409, 'description': 'Wrong Laserpointer state'}
+            lp.update(self.get_laser_pointer())
+
+        return lp
+
+    def set_angles(self, hz, v, atr):
+        """
+
+        :param hz:
+        :param v:
+        :param atr:
+        :return:
+        """
+        if atr:
+            atr_mode = aut.AUT_TARGET
+        else:
+            atr_mode = aut.AUT_POSITION
+        return self.communicate(geocom.AUT_MakePositioning(horizontal_angle=hz,
+                                                           vertical_angle=v,
+                                                           atr_mode=atr_mode))
+
+    def set_instrument_modes(self, atr_mode, edm_mode, hz_tolerance, v_tolerance):
+        """
+
+        :param atr_mode:
+        :param edm_mode:
+        :param hz_tolerance:
+        :param v_tolerance:
+        :return:
+        """
+        # TODO ..
+        pass
+
+    def set_instrument_name(self, value):
+        """
+        NOT ALLOWED
+        :param value:
+        :return:
+        """
+        pass
+
+    def set_instrument_number(self, value):
+        """
+        NOT ALLOWED
+        :param value:
+        :return:
+        """
+        pass

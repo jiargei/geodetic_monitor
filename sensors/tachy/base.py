@@ -5,9 +5,19 @@
 from abc import ABCMeta
 from abc import abstractmethod, abstractproperty
 import time
-from common.utils import angle
+import imp
+import os
+
+# convert_path = str(os.getcwd()+"/geodetic/calculations/convert.py")
+# print convert_path
+# convert = imp.load_source("convert", convert_path)
 
 from sensors.base import Sensor
+from geodetic.calculations import convert
+from geodetic.calculations.polar import grid_to_polar
+from geodetic.point import Point
+
+
 # Code
 
 FACE_ONE = 0
@@ -39,9 +49,13 @@ class Tachy(Sensor):
 
     sensor_type = "TACHY"
 
-    @abstractproperty
-    def model_type(self):
-        pass
+    def __init__(self, *args, **kwargs):
+        super(Tachy, self).__init__()
+        self.search_hz = kwargs.get("search_hz", 100e-4)
+        self.search_v = kwargs.get("search_v", 100e-4)
+        self.__laserpointer_state = ON
+
+        self.set_laser_pointer(self.__laserpointer_state)
 
     @abstractmethod
     def set_polar(self, horizontal_angle, vertical_angle, aim_target=False):
@@ -51,29 +65,6 @@ class Tachy(Sensor):
         :param vertical_angle:
         :param aim_target:
         :return:
-        """
-
-    @abstractmethod
-    def set_timeout(self, timeout):
-        """
-        :param timeout: Timeout für serielle Schnittstelle
-        :type timeout: float
-        """
-
-    @abstractmethod
-    def get_timeout(self):
-        """
-        Liefert TimeOut der seriellen Schnittstelle
-        :return: TimeOut
-        :rtype: float
-        """
-
-    @abstractmethod
-    def get_model_id(self):
-        """
-        Liefert Model ID
-        :return:
-        :rtype: int
         """
 
     @abstractmethod
@@ -172,46 +163,13 @@ class Tachy(Sensor):
         """
 
     @abstractmethod
-    def get_horizontal_angle(self):
+    def set_angles(self, hz, v, atr):
         """
-        Get Horizontal Angle
-        :return:
-        """
+        Set Vertical and Horizontal Angle
 
-    @abstractmethod
-    def set_horizontal_angle(self, value):
-        """
-        Set Horizontal Angle
-        :param value:
-        :return:
-        """
-
-    @abstractmethod
-    def get_vertical_angle(self):
-        """
-        Get Vertical Angle
-        :return:
-        """
-
-    @abstractmethod
-    def set_vertical_angle(self, value):
-        """
-        Set Vertical Angle
-        :return:
-        """
-
-    @abstractmethod
-    def get_slope_distance(self):
-        """
-        Return Slope Distance
-        :return:
-        """
-
-    @abstractmethod
-    def set_slope_distance(self, value):
-        """
-        Set Slope Distance
-        :param value:
+        :param hz:
+        :param v:
+        :param atr:
         :return:
         """
 
@@ -231,41 +189,18 @@ class Tachy(Sensor):
         """
 
     @abstractmethod
-    def get_compensator_cross(self):
-        """
-        Get Compensator Cross
-        :return:
-        """
-
-    @abstractmethod
-    def set_compensator_cross(self, value):
-        """
-        Set compenator cross value
-        :param value:
-        :return:
-        """
-
-    @abstractmethod
-    def get_compensator_length(self):
+    def get_compensator(self):
         """
         Get Compensator Length
         :return:
         """
 
-    @abstractmethod
-    def set_compensator_length(self, value):
-        """
-        Set Compenator Length Value
-        :param value:
-        :return:
-        """
-
-    @abstractmethod
     def get_laser_pointer(self):
         """
 
         :return:
         """
+        return {"LASERPOINTER_STATE": self.__laserpointer_state}
 
     @abstractmethod
     def set_laser_pointer(self, value):
@@ -291,7 +226,7 @@ class Tachy(Sensor):
         :return:
         """
 
-    def turn_to_corr(self, horizontal_angle, vertical_angle, face):
+    def turn_to_corr(self, horizontal_angle, vertical_angle, face, atr=False):
         """
         Turn Tachymeter to hz, v and correct face
 
@@ -301,19 +236,13 @@ class Tachy(Sensor):
         :type vertical_angle: float
         :param face:
         :type face: int
+        :param atr:
+        :type atr: bool
         :return:
         """
-        self.turn_to(horizontal_angle=angle.change_face_hz(horizontal_angle, face),
-                     vertical_angle=angle.change_face_v(vertical_angle, face))
-
-    @abstractmethod
-    def turn_to(self, horizontal_angle, vertical_angle):
-        """
-
-        :param horizontal_angle:
-        :param vertical_angle:
-        :return:
-        """
+        self.set_angles(horizontal_angle=convert.change_face_hz(horizontal_angle, face),
+                        vertical_angle=convert.change_face_v(vertical_angle, face),
+                        atr=atr)
 
     def turn_to_measurement(self, measurement, face):
         """
@@ -327,7 +256,8 @@ class Tachy(Sensor):
         """
         self.turn_to_corr(horizontal_angle=measurement.HORIZONTAL_ANGLE,
                           vertical_angle=measurement.VERTICAL_ANGLE,
-                          face=face)
+                          face=face,
+                          atr=False)
 
     def turn_to_reference(self, reference, face):
         """
@@ -335,11 +265,34 @@ class Tachy(Sensor):
 
         :param reference:
         :type reference: dimosy.TACHY.REFERENCE.Reference
+        :param face:
+        :type face: int
         :return:
         """
         self.turn_to_corr(horizontal_angle=reference.HORIZONTAL_ANGLE,
                           vertical_angle=reference.VERTICAL_ANGLE,
-                          face=face)
+                          face=face,
+                          atr=False)
+
+    def turn_to_point(self, p, face):
+        """
+
+        :param p:
+        :type p: Point
+        :param face:
+        :type face: int
+        :return:
+        """
+        d_station = self.get_station()
+        p_station = Point(x=d_station["EASTING"],
+                          y=d_station["NORTHING"],
+                          z=d_station["HEIGHT"]+d_station["INSTRUMENT_HEIGHT"])
+
+        polar = grid_to_polar(p_station, p)
+        self.turn_to_corr(horizontal_angle=polar["AZIMUT"],
+                          vertical_angle=polar["ZENIT"],
+                          face=face,
+                          atr=False)
 
     @abstractmethod
     def get_measurement(self):
@@ -352,8 +305,12 @@ class Tachy(Sensor):
     @abstractmethod
     def set_orientation(self, value):
         """
+        Per definition of Leica... Change the recent azimut to corrected azimut
+        Lets say Orientation is 112.4561 gon and the raw azimt = 3.4100 gon
+        value should be 115.9661 gon
 
         :param value:
+        :type value: float
         :return:
         """
 
@@ -371,28 +328,28 @@ class Tachy(Sensor):
         elif self.get_face()["FACE"] == FACE_TWO:
             self.set_face(FACE_ONE)
 
+    @abstractmethod
     def set_face(self, value):
         """
 
         :param value:
         :return:
         """
-        self.correct_face(value)
 
-    def correct_face(self, face):
-        """
-        Dreht Gerät in die richtige Lage
-
-        :param face: Gewünschte Lage
-        :type face: int
-        :return:
-        """
-        current_face = self.get_face()["FACE"]
-        while not current_face == face:
-            # print "Gerät ist in Lage %d, wechsle.." % current_face
-            self.change_face()
-            current_face = self.get_face()["FACE"]
-            time.sleep(0.5)
+    # def correct_face(self, face):
+    #     """
+    #     Dreht Gerät in die richtige Lage
+    #
+    #     :param face: Gewünschte Lage
+    #     :type face: int
+    #     :return:
+    #     """
+    #     current_face = self.get_face()["FACE"]
+    #     while not current_face == face:
+    #         # print "Gerät ist in Lage %d, wechsle.." % current_face
+    #         self.change_face()
+    #         current_face = self.get_face()["FACE"]
+    #         time.sleep(0.5)
 
         # print "Gerät ist in Lage %d" % current_face
 
@@ -411,17 +368,6 @@ class Tachy(Sensor):
     def get_station(self):
         """
 
-        :return:
-        """
-
-    @abstractmethod
-    def set_instrument(self, atr_mode, edm_mode, hz_tolerance, v_tolerance):
-        """
-
-        :param atr_mode:
-        :param edm_mode:
-        :param hz_tolerance:
-        :param v_tolerance:
         :return:
         """
 
@@ -446,27 +392,20 @@ class Tachy(Sensor):
         :return:
         """
 
-    @abstractmethod
-    def get_orientation(self):
-        """
-        Liefert die Orientierung des Gerätes
-        :return:
-        """
-
-    @abstractmethod
-    def get_path(self):
-        """
-
-        :return:
-        """
-
-    @abstractmethod
-    def set_path(self, value):
-        """
-
-        :param value:
-        :return:
-        """
+    # @abstractmethod
+    # def get_path(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #
+    # @abstractmethod
+    # def set_path(self, value):
+    #     """
+    #
+    #     :param value:
+    #     :return:
+    #     """
 
     @abstractmethod
     def connect(self):
@@ -484,62 +423,62 @@ class Tachy(Sensor):
         :rtype: bool
         """
 
-    @abstractmethod
-    def set_baudrate(self, value):
-        """
-
-        :param value:
-        :return:
-        """
-
-    @abstractmethod
-    def get_baudrate(self):
-        """
-
-        :return:
-        """
-
-    @abstractmethod
-    def set_bytesize(self, value):
-        """
-
-        :param value:
-        :return:
-        """
-
-    @abstractmethod
-    def get_bytesize(self):
-        """
-
-        :return:
-        """
-
-    @abstractmethod
-    def set_stopbits(self, value):
-        """
-
-        :param value:
-        :return:
-        """
-
-    @abstractmethod
-    def get_stopbits(self):
-        """
-
-        :return:
-        """
-
-    @abstractmethod
-    def set_parity(self, value):
-        """
-
-        :param value:
-        :return:
-        """
-
-    @abstractmethod
-    def get_parity(self):
-        """
-
-        :return:
-        """
+    # @abstractmethod
+    # def set_baudrate(self, value):
+    #     """
+    #
+    #     :param value:
+    #     :return:
+    #     """
+    #
+    # @abstractmethod
+    # def get_baudrate(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #
+    # @abstractmethod
+    # def set_bytesize(self, value):
+    #     """
+    #
+    #     :param value:
+    #     :return:
+    #     """
+    #
+    # @abstractmethod
+    # def get_bytesize(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #
+    # @abstractmethod
+    # def set_stopbits(self, value):
+    #     """
+    #
+    #     :param value:
+    #     :return:
+    #     """
+    #
+    # @abstractmethod
+    # def get_stopbits(self):
+    #     """
+    #
+    #     :return:
+    #     """
+    #
+    # @abstractmethod
+    # def set_parity(self, value):
+    #     """
+    #
+    #     :param value:
+    #     :return:
+    #     """
+    #
+    # @abstractmethod
+    # def get_parity(self):
+    #     """
+    #
+    #     :return:
+    #     """

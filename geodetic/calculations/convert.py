@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import math
+from geodetic.point import Point
 
 
 def rad2gon(angle):
@@ -28,34 +29,35 @@ def gon2rad(angle):
     return angle * math.pi / 200
 
 
-def corr_hz(angle, UNIT='gon', EPS=5e-6):
+def corr_hz(angle, unit='gon', eps=5e-6):
     """
     Korrigiert den Hz-Winkel in der gewünschten Einheit.
 
-    :param angle: Eingangswinkel Hz [UNIT]
+    :param angle: Eingangswinkel Hz [unit]
     :type angle: float
-    :param UNIT: Einheit
-    :type UNIT: str
-    :param EPS:
-    :type EPS: float
+    :param unit: Einheit
+    :type unit: str
+    :param eps:
+    :type eps: float
 
-    :return: korrigierter Hz-Winkel [UNIT]
+    :return: korrigierter Hz-Winkel [unit]
     :rtype: float
     """
-    if UNIT == 'rad':
-        CIRCLE = 2 * math.pi
-        EPS = gon2rad(EPS)
-    elif UNIT == 'grad':
-        CIRCLE = 360
+        
+    if unit == 'rad':
+        circle = 2 * math.pi
+        eps = gon2rad(eps)
+    elif unit == 'grad':
+        circle = 360
     else:
-        CIRCLE = 400
+        circle = 400
 
     while angle < 0:
-        angle += CIRCLE
-    while angle >= CIRCLE:
-        angle -= CIRCLE
-
-    if abs(CIRCLE - angle) <= EPS:
+        angle += circle
+    while angle >= circle:
+        angle -= circle
+    
+    if abs(circle - angle) <= eps:
         angle = 0
 
     return angle
@@ -81,8 +83,8 @@ def change_face_hz(angle, face=0):
         return angle - 200 if angle >= 200 else angle + 200
     elif face == 0:
         return angle
-
-
+    
+    
 def change_face_v(angle, face=0):
     """
     Berechnet den V-Winkel in der gewünschten Lage
@@ -95,33 +97,37 @@ def change_face_v(angle, face=0):
     :rtype: float
     :return: Korrigierter V-Winkel [gon]
     """
-
+    
     if face == 1:
         return 400 - angle
     elif face == 0:
         return angle
-
-
-def kreis_ablage(M, A, P, r):
+    
+    
+def kreis_ablage(m, a, p, r):
     """
-    Berechnet die Ablage eines Punktes auf einen Kreisbogen der bei A beginnt
-    und den Radius r besitzt.
+    Berechnet die Ablage eines Punktes auf einen Kreisbogen mit Mittelpunkt m,
+    der bei a beginnt und den Radius r besitzt.
 
-    Die Punkte A,M,P werden in Form von dict eingelesen {'EASTING': ..., ...}
-    und als Ergebnis erhält man ein dict mit {'QUER': ..., 'LAENGS': ...}
-
+    :type m: Point
+    :type a: Point
+    :type p: Point
+    
     :rtype: dict
-    :return: QUER, LAENGS
+    :return: cross, length
     """
 
-    b = math.sqrt((M['EASTING'] - P['EASTING']) ** 2 + (M['NORTHING'] - P['NORTHING']) ** 2)
-    a = math.sqrt((M['EASTING'] - A['EASTING']) ** 2 + (M['NORTHING'] - A['NORTHING']) ** 2)
-    c = math.sqrt((A['EASTING'] - P['EASTING']) ** 2 + (A['NORTHING'] - P['NORTHING']) ** 2)
+    b = math.sqrt((m.x - p.x) ** 2 + (m.y - p.y) ** 2)
+    a = math.sqrt((m.x - a.x) ** 2 + (m.y - a.y) ** 2)
+    c = math.sqrt((a.x - p.x) ** 2 + (a.y - p.y) ** 2)
 
     w = math.acos((c ** 2 - a ** 2 - b ** 2) / (-2 * a * b))
 
+    r = a - m
+    r = r.norm2D()
+
     l = w * r
     q = b - r
-
-    return {'QUER': q,
-            'LAENGS': l}
+    
+    return {'cross': q,
+            'length': l}

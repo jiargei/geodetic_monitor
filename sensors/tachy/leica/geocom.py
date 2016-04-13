@@ -2,12 +2,16 @@
 
 import re
 from abc import ABCMeta, abstractproperty
-
+import logging
 import aut
 import bap
 import tmc
 from returncodes import RETURNCODES
 from sensors.tachy.base import ON
+
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 __author__ = 'jurgen'
 
@@ -30,16 +34,19 @@ class GeoCOMCommand(object):
     GEOCOM_SUFFIX = "\r\n"
     GEOCOM_REGEXP = r"((?P<geoCOMReplyType>\%R1P,)(?P<geoCOMReturnCode>\d))?((,)(?P<transactionID>\d))(:)(?P<returnCode>\d+)?(?P<parameters>.*)(\n)"
 
+    @abstractproperty
+    def GEOCOM_PARAMETERS(self):
+        """
+
+        :return:
+        """
+
     def __str__(self):
         return "%s%s%s" % (self.GEOCOM_PREFIX, self.GEOCOM_QUERY, self.GEOCOM_SUFFIX)
 
     @abstractproperty
     def GEOCOM_QUERY(self):
         pass
-
-    @abstractproperty
-    def GEOCOM_PARAMETERS(self):
-        return ['EMPTY']
 
     @classmethod
     def create_serial(cls):
@@ -52,6 +59,9 @@ class GeoCOMCommand(object):
 
     def set_serial_read(self, serial_read):
         self.serial_read = serial_read
+
+    def get_serial_read(self):
+        return self.serial_read
 
     @classmethod
     def is_valid_geocom_regexp(cls, serial_response):
@@ -82,8 +92,8 @@ class GeoCOMCommand(object):
         :return: True, wenn Anzahl der Elemente gleich, sonst False
         :rtype: bool
         """
-        # print (cls.GEOCOM_PARAMETERS)
-        # print (parameters_list)
+        logger.debug(cls.GEOCOM_PARAMETERS)
+        logger.debug(parameters_list)
 
         return len(cls.GEOCOM_PARAMETERS) == len(parameters_list)
 
@@ -95,7 +105,7 @@ class GeoCOMCommand(object):
         :rtype: dict
         """
         parameter_dict = {'status': 409, 'description': 'Conflict - wrong numbers of parameters'}
-
+        logger.debug(serial_parameters)
         if self.is_valid_parameters_length(serial_parameters):
             for i in range(len(self.GEOCOM_PARAMETERS)):
                 parameter_dict.update({self.GEOCOM_PARAMETERS[i]: serial_parameters[i]})
@@ -171,11 +181,38 @@ class TMC_GetAngle1(GeoCOMCommand):
     def GEOCOM_QUERY(self):
         return "2003:%d" % self.__inclination_mode
 
-    GEOCOM_PARAMETERS = ['HORIZONTAL_ANGLE', 'VERTICAL_ANGLE',
+    GEOCOM_PARAMETERS = ['HORIZONTAL_ANGLE', 'VERTICAL_ANGLE    def get_brand(cls):',
                          'ANGLE_ACCURACY', 'ANGLE_TIME',
                          'CROSS_INCLINE', 'LENGTH_INCLINE',
                          'ACCURACY_INCLINE', 'INCLINE_TIME',
                          'FACE_DEF']
+
+
+class TMC_GetAngle5(GeoCOMCommand):
+    """
+    ASCII-Request: %R1Q,2107:Mode[long] \n
+    ASCII-Response: %R1P,0,0:RC,Hz[double],V[double] \n
+    Remarks: \n
+    This function carries out an angle measurement and returns the results. In contrast to the function
+    TMC_GetAngle1 this function returns only the values of the angle. For simple angle measurements use
+    TMC_GetSimpleMea instead.
+    Information about measurement is returned in the return code.
+    """
+
+    def __init__(self, inclination_mode=tmc.TMC_MEA_INC):
+        self.__inclination_mode = inclination_mode
+
+    def set_inclination_mode(self, value):
+        if value in [tmc.TMC_MEA_INC, tmc.TMC_AUTO_INC, tmc.TMC_PLANE_INC]:
+            self.__inclination_mode = value
+        else:
+            self.__inclination_mode = tmc.TMC_AUTO_INC
+
+    @property
+    def GEOCOM_QUERY(self):
+        return "2003:%d" % self.__inclination_mode
+
+    GEOCOM_PARAMETERS = ['HORIZONTAL_ANGLE', 'VERTICAL_ANGLE']
 
 
 class TMC_DoMeasure(GeoCOMCommand):
@@ -236,7 +273,7 @@ class TMC_SetStation(GeoCOMCommand):
     This function is used to set the station coordinates of the instrument.
     """
 
-    def __init__(self, easting, northing, height, instrument_height):
+    def __init__(self, easting, northing, height, instrument_height = 0.0):
         self.__easting = easting
         self.__northing = northing
         self.__height = height
@@ -486,13 +523,21 @@ class BAP_SetPrismType(GeoCOMCommand):
 
 
 class EDM_SetLaserpointer(GeoCOMCommand):
+    """
+    ASCII-Request: %RR1Q,1004:eLaser[long] \n
+    ASCII-Response: %R1P,0,0:RC \n
+    Remarks: \n
+    Laserpointer is only available on models with R100 / R300 EDM which support distance measurement without reflector.
+    """
 
     def __init__(self, on_off=ON):
         self.__on_off = on_off
 
     @property
     def GEOCOM_QUERY(self):
-        return "10004:%d" % self.__on_off
+        return "1004:%d" % self.__on_off
+
+    GEOCOM_PARAMETERS = ['EMPTY']
 
 
 class AUT_FineAdjust(GeoCOMCommand):
@@ -568,14 +613,14 @@ class CSV_GetInstrumentNo(GeoCOMCommand):
     ASCII-Request: %R1Q,5003:\n
     ASCII-Response: %R1P,0,0:RC, SerialNo[long]\n
     Remarks:\n
-    Gets the factory defined serial number of the instrument.
+    Gets the factory defined rs232 number of the instrument.
     """
 
     @property
     def GEOCOM_QUERY(self):
         return "5003:"
 
-    GEOCOM_PROPERTIES = ['INSTRUMENT_NUMBER']
+    GEOCOM_PARAMETERS = ['INSTRUMENT_NUMBER']
 
 
 class CSV_GetInstrumentName(GeoCOMCommand):
@@ -593,4 +638,4 @@ class CSV_GetInstrumentName(GeoCOMCommand):
     def GEOCOM_QUERY(self):
         return "5004:"
 
-    GEOCOM_PROPERTIES = ["INSTRUMENT_NAME"]
+    GEOCOM_PARAMETERS = ["INSTRUMENT_NAME"]
