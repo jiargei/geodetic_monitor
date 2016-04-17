@@ -54,5 +54,7 @@ class Task(models.Model):
     """
 
     """
+    id = UIDField()
+
     def is_due(self):
         return True
