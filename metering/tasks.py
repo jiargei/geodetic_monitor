@@ -1,8 +1,12 @@
+import logging
+
 from dimosy.celery import app
 import serial
 
 from .models import Reference
-from .. import sensors
+import sensors
+
+logger = logging.getLogger(__name__)
 
 
 @app.task(bind=True)
@@ -21,3 +25,4 @@ def meter_task(self, reference_id):
 
     sensor_real(serial=sensor_serial)
     sensor_real.get_measurement()
+

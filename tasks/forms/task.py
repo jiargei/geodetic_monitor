@@ -1,11 +1,11 @@
 from django import forms
 
-from ..models import Task
+from ..models import PeriodicTask
 
 
 class Update(forms.ModelForm):
     class Meta:
-        model = Task
+        model = PeriodicTask
         fields = ('start_time', 'end_time', 'active', 'day_of_week', )
 
     def __init__(self, *args, **kwargs):
@@ -15,7 +15,7 @@ class Update(forms.ModelForm):
 
 class Create(forms.ModelForm):
     class Meta:
-        model = Task
+        model = PeriodicTask
         fields = ('start_time', 'end_time', 'active', 'day_of_week', )
 
     def __init__(self, *args, **kwargs):

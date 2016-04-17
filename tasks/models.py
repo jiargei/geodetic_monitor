@@ -50,9 +50,9 @@ class PeriodicTask(models.Model):
         return False
 
 
-    class Task(models.Model):
-        """
+class Task(models.Model):
+    """
 
-        """
-        def is_due(self):
-            return True
+    """
+    def is_due(self):
+        return True
