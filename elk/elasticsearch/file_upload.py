@@ -1,10 +1,10 @@
-from elasticsearch import Elasticsearch
-import random
-import logging
 import datetime
+import logging
+import random
 
-from elastic.common import utils
-from elastic.common import constants
+from elasticsearch import Elasticsearch
+
+from elk.elasticsearch.common import constants
 
 
 class Measurement(object):
