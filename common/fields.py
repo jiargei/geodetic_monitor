@@ -1,5 +1,7 @@
 from common.utils.generate import generate_id
 from django.db import models
+from django.db.models import Lookup
+from django.db.models.fields import Field
 
 
 class UIDField(models.CharField):
@@ -30,3 +32,15 @@ class UIDField(models.CharField):
                       'default', 'db_index', 'editable'):
             del kwargs[kwarg]
         return name, path, args, kwargs
+
+
+# @Field.register_lookup
+# class DatetimeLookup(Lookup):
+#
+#     lookup_name = "dt"
+#
+#     def as_sql(self, compiler, connection):
+#         lhs, lhs_params = compiler.compile(self.lhs.lhs)
+#         rhs, rhs_params = self.process_rhs(compiler, connection)
+#         params = lhs_params + rhs_params + lhs_params + rhs_params
+#         return '%s < %s AND %s > -%s' % (lhs, rhs, lhs, rhs), params

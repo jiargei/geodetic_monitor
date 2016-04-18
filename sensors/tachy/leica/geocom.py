@@ -188,6 +188,39 @@ class TMC_GetAngle1(GeoCOMCommand):
                          'FACE_DEF']
 
 
+class TMC_GetCoordinate(GeoCOMCommand):
+    """
+    ASCII-Request: %R1Q,2082:WaitTime[long],Mode[long]\n
+    ASCII-Response: %R1P,0,0:RC,E[double],N[double],H[double],CoordTime[long], E-Cont[double],N-Cont[double],H-Cont[double],CoordContTime[long]\n
+    Remarks:\n
+    This function queries an angle measurement and, in dependence of the selected Mode , an inclination measurement and calculates the co-ordinates of the measured point with an already measured distance. A distance measurement has to be started in advance. The WaitTime is a delay to wait for the distance measurement to finish. Single and tracking measurements are supported. Information about a missing distance measurement and other information about the quality of the result is returned in the returncode.
+    """
+    def __init__(self, wait_time=3000, inclination_mode=tmc.TMC_MEA_INC):
+        """
+
+        :param wait_time: The delay to wait for the distance measurement to finish [ms]
+        :param inclination_mode: Inclination sensor measurement mode
+        :return: Calculated Cartesian co-ordinates
+        """
+        self.__wait_time = wait_time
+        self.__inclincation_mode = inclination_mode
+
+    def set_inclination_mode(self, value):
+        if value in [tmc.TMC_MEA_INC, tmc.TMC_AUTO_INC, tmc.TMC_PLANE_INC]:
+            self.__inclination_mode = value
+        else:
+            self.__inclination_mode = tmc.TMC_AUTO_INC
+
+    @property
+    def GEOCOM_QUERY(self):
+        return "2082:%d,%d" % (self.__wait_time, self.__inclination_mode)
+
+    GEOCOM_PARAMETERS = ['EASTING', 'NORTHING', 'HEIGHT',
+                         'CORD_TIME',
+                         'EASTING_CONT', 'NORTHING_CONT', 'HEIGHT_CONT',
+                         'CORT_CONT_TIME']
+
+
 class TMC_GetAngle5(GeoCOMCommand):
     """
     ASCII-Request: %R1Q,2107:Mode[long] \n
@@ -198,7 +231,6 @@ class TMC_GetAngle5(GeoCOMCommand):
     TMC_GetSimpleMea instead.
     Information about measurement is returned in the return code.
     """
-
     def __init__(self, inclination_mode=tmc.TMC_MEA_INC):
         self.__inclination_mode = inclination_mode
 

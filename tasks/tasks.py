@@ -13,7 +13,7 @@ from ..metering.tasks import meter_task
 def schedule(self):
     logger.debug("Execute schedule task...")
     # TODO add some filtering and check is_due
-    tasks = PeriodicTask.objects.all()
+    tasks = PeriodicTask.objects.filter(active=True)
     logger.debug("Checking %s tasks...", len(tasks))
     for task in tasks:
         if task.is_due():

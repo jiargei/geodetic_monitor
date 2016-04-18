@@ -13,3 +13,5 @@ class TaskAdmin(admin.ModelAdmin):
     formfield_overrides = {
         BitField: {'widget': BitFieldCheckboxSelectMultiple},
     }
+
+

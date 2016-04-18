@@ -36,6 +36,17 @@ class Point():
         self.y = y
         self.z = z
 
+    def set_coordinate(self, coordinate):
+        """
+
+        :param coordinate:
+        :return:
+        """
+        self.x = coordinate['x']
+        self.y = coordinate['y']
+        self.z = coordinate['z']
+
+
     def dist_slope(self, p):
         """return the Euclidian distance between self and p"""
         dx = self.x - p.x

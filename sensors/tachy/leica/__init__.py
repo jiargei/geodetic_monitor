@@ -1,2 +1,3 @@
 import leica_tachy
 import leica_tachy_tps1100
+import leica_tachy_ts15

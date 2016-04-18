@@ -55,6 +55,11 @@ class Coordinate(models.Model):
     class Meta:
         abstract = True
 
+    def get_point(self):
+        return {'x': self.easting,
+                'y': self.northing,
+                'z': self.height}
+
 
 class Station(Coordinate):
     position = models.ForeignKey('metering.Position', related_name='stations')
@@ -68,6 +73,9 @@ class Station(Coordinate):
     class Meta:
         ordering = ['-from_date']
         get_latest_by = "from_date"
+
+    def __unicode__(self):
+        return u"%s, %s, %s" % (self.position, self.sensor, self.from_date)
 
 
 class Position(models.Model):
@@ -94,6 +102,9 @@ class Reference(models.Model):
     # id = UIDField()
     position = models.ForeignKey(Position, related_name='references')
     target = models.ForeignKey('metering.Target', related_name='references')
+
+    def __unicode__(self):
+        return u"%s -> %s" % (self.position, self.target)
 
 
 class Target(Coordinate):

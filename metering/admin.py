@@ -1,9 +1,14 @@
 from django.contrib import admin
-from .models import Sensor, ObservationType, Position, Reference, Target
+from .models import Sensor, ObservationType, Position, Reference, Target, Station
 
 
 class ReferenceInline(admin.TabularInline):
     model = Reference
+    extra = 1
+
+
+class StationInline(admin.TabularInline):
+    model = Station
     extra = 1
 
 
@@ -24,9 +29,14 @@ class ObservationTypeAdmin(admin.ModelAdmin):
 
 @admin.register(Position)
 class PositionAdmin(admin.ModelAdmin):
-    inlines = [ReferenceInline]
+    inlines = [ReferenceInline, StationInline]
 
 
 @admin.register(Target)
 class TargetAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Station)
+class StationAdmin(admin.ModelAdmin):
     pass

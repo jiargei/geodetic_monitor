@@ -303,6 +303,13 @@ class Tachy(Sensor):
         """
 
     @abstractmethod
+    def get_target(self):
+        """
+        Get Coordinates for aimed Target
+        :return: EASTING, NORTHING, HEIGHT
+        """
+
+    @abstractmethod
     def set_orientation(self, value):
         """
         Per definition of Leica... Change the recent azimut to corrected azimut

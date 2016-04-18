@@ -70,6 +70,13 @@ class LeicaTachy(Tachy):
         self.communicate(geocom.TMC_DoMeasure(tmc.TMC_DEF_DIST))
         return self.communicate(geocom.TMC_GetSimpleMea())
 
+    def get_target(self):
+        """
+
+        :return:
+        """
+        return self.communicate(geocom.TMC_GetCoordinate())
+
     def fine_adjust(self):
         """
 

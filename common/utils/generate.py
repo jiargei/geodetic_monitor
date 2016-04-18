@@ -15,7 +15,7 @@ def generate_id(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
 
 
-def generate_datetime(string_format="%Y-%m-%d %H:%M:%S", date=None):
+def generate_datetime(string_format="%Y-%m-%dT%H:%M:%S", date=None):
     """
 
     :param string_format:
@@ -26,7 +26,7 @@ def generate_datetime(string_format="%Y-%m-%d %H:%M:%S", date=None):
     gen_now(string_format, date, date_return=True)
 
 
-def generate_datestring(string_format="%Y-%m-%d %H:%M:%S", date=None):
+def generate_datestring(string_format="%Y-%m-%dT%H:%M:%S", date=None):
     """
 
     :param string_format:
@@ -37,7 +37,7 @@ def generate_datestring(string_format="%Y-%m-%d %H:%M:%S", date=None):
     gen_now(string_format, date, date_return=False)
 
 
-def gen_now(string_format="%Y-%m-%d %H:%M:%S", date=None, date_return=False):
+def gen_now(string_format="%Y-%m-%dT%H:%M:%S", date=None, date_return=False):
     """
     Liefert ein Datum als Antwort als String im Format 'sf'.
     Bei DATE_RETURN=True wird als Ergebnis ein Typ datetime.datetime als Antwort gegeben.
