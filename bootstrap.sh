@@ -5,6 +5,7 @@ sudo do-release-upgrade
 sudo apt-get update
 sudo apt-get upgrade -y
 sudo apt-get install -y build-essential python-pip python-setuptools python-dev
+sudo apt-get install -y cython python-numpy python-scipy python-matplotlib
 sudo apt-get install -y postgresql vim-nox git curl
 
 
