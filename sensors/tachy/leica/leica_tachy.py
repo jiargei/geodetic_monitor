@@ -97,8 +97,16 @@ class LeicaTachy(Tachy):
         return self.communicate(geocom.TMC_GetStation())
 
     def set_face(self, value):
-        while str(value) != self.communicate(geocom.TMC_GetFace())['FACE']:
+        """
+
+        :param value:
+        :return:
+        """
+        assert value in [1, 0]
+        current_face = int(self.get_face()["FACE"])
+        while str(value) != current_face:
             cmd = self.communicate(geocom.AUT_ChangeFace())
+            current_face = int(self.get_face()["FACE"])
             time.sleep(1)
 
     def get_face(self):

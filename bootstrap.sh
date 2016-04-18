@@ -25,7 +25,7 @@ elastic_folder='/opt/elastic/'
 sudo mkdir -p $elastic_folder
 sudo wget -P $elastic_folder https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/2.3.1/elasticsearch-2.3.1.tar.gz
 sudo wget -P $elastic_folder https://download.elastic.co/logstash/logstash/logstash-2.3.0.tar.gz
-sudo wget -P $elastic_folder https://download.elastic.co/kibana/kibana/kibana-4.5.0-linux-x64.tar.gz
+sudo wget -P $elastic_folder https://download.elastic.co/kibana/kibana/kibana-4.5.0-linux-x86.tar.gz
 sudo tar -xzf *.tar.gz -C $elastic_folder
 
 

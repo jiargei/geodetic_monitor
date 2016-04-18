@@ -17,7 +17,7 @@ class LeicaTPS1100TachyTestCase(unittest.TestCase):
         self.port = port
 
     def setUp(self):
-        s = serial.Serial(port=self.port)
+        s = serial.Serial(port=self.port, timeout=7)
         if not s.isOpen():
             s.open()
         self.sensor = TPS1100(rs232=s)
@@ -57,4 +57,4 @@ class LeicaTPS1100TachyTestCase(unittest.TestCase):
 
     def tearDown(self):
         self.sensor.set_laser_pointer(OFF)
-        self.sensor.switch_off()
+        # self.sensor.switch_off()
