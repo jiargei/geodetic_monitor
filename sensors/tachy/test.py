@@ -4,7 +4,7 @@ import logging
 import time
 
 from leica.leica_tachy_tps1100 import TPS1100
-from base import FACE_ONE, FACE_TWO
+from base import FACE_ONE, FACE_TWO, OFF
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -54,3 +54,7 @@ class LeicaTPS1100TachyTestCase(unittest.TestCase):
         time.sleep(7)
         self.sensor.set_face(FACE_ONE)
         self.assertEqual(str(FACE_ONE), self.sensor.get_face()["FACE"])
+
+    def tearDown(self):
+        self.sensor.set_laser_pointer(OFF)
+        self.sensor.switch_off()
