@@ -55,6 +55,22 @@ MIDDLEWARE_CLASSES = (
     # 'rollbar.contrib.django.middleware.RollbarNotifierMiddleware',
 )
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'tasks': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    },
+}
+
 ROOT_URLCONF = 'dimosy.urls'
 
 WSGI_APPLICATION = 'dimosy.wsgi.application'
@@ -133,3 +149,11 @@ SENSORS = (
     'sensors.tachy.leica.tps_1100.TPS1100',
 )
 BOX_ID = None
+
+from datetime import timedelta
+CELERYBEAT_SCHEDULE = {
+    'schedule-tasks': {
+        'task': 'tasks.tasks.schedule',
+        'schedule': timedelta(seconds=1),
+    },
+}

@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 from django.db import models
-from django.utils.timezone import  utc
+from django.utils import timezone
 
 from common import constants
 from common.fields import UIDField
@@ -59,9 +59,10 @@ class Coordinate(models.Model):
 class Station(Coordinate):
     position = models.ForeignKey('metering.Position', related_name='stations')
     sensor = models.ForeignKey('metering.Sensor', related_name='stations')
-    box = models.ForeignKey('accounts.Box', related_name='box')
-    port = models.FileField(upload_to='/dev/')
-    from_date = models.DateTimeField(default=utc.now, db_index=True)
+    box = models.ForeignKey('accounts.Box', related_name='box', blank=True, null=True)
+    # port = models.FileField(upload_to='/dev/', blank=True, null=True)
+    port = models.CharField(blank=True, null=True, max_length=32)
+    from_date = models.DateTimeField(default=timezone.now, db_index=True)
     to_date = models.DateTimeField(db_index=True)
 
     class Meta:
