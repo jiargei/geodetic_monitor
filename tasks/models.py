@@ -21,6 +21,7 @@ class PeriodicTask(models.Model):
     start_time = models.TimeField()
     end_time = models.TimeField()
     frequency = models.DecimalField(default=10., max_digits=4, decimal_places=1)
+    last_started = models.DateTimeField(null=True, blank=True, db_index=True)
 
     day_of_week = BitField(flags=(
         ("0", _('monday')),
@@ -57,4 +58,9 @@ class Task(models.Model):
     id = UIDField()
 
     def is_due(self):
+        """
+
+        :return: True, if task should be executed, else False
+        :rtype: bool
+        """
         return True

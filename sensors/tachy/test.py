@@ -31,6 +31,7 @@ class LeicaTPS1100TachyTestCase(unittest.TestCase):
     def test_get_sensor_type(self):
         logger.debug("Testing sensor type 'TACHY'")
         r = self.sensor.get_sensor_type()
+        r = self.sensor.get_sensor_type()
         self.assertEqual(r["SENSOR_TYPE"], "TACHY",
                          msg="Sensor should be a TACHY, got %s instead" % self.sensor.sensor_type)
 
@@ -57,6 +58,14 @@ class LeicaTPS1100TachyTestCase(unittest.TestCase):
         self.sensor.set_face(FACE_ONE)
         current_face = int(self.sensor.get_face()["FACE"])
         self.assertEqual(int(FACE_ONE), current_face)
+
+    def test_message_to_logstash(self):
+        """
+
+        :return:
+        """
+        # TODO ..
+        pass
 
     def tearDown(self):
         self.sensor.set_laser_pointer(OFF)
