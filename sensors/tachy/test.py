@@ -49,11 +49,14 @@ class LeicaTPS1100TachyTestCase(unittest.TestCase):
     def test_change_face(self):
         logger.debug("Change tachy face")
         self.sensor.set_face(FACE_TWO)
-        self.assertEqual(str(FACE_TWO), self.sensor.get_face()["FACE"])
+        current_face = int(self.sensor.get_face()["FACE"])
+        logger.info("FACE %d: " % current_face)
+        self.assertEqual(int(FACE_TWO), current_face)
         logger.debug("Wait a few seconds")
         time.sleep(7)
         self.sensor.set_face(FACE_ONE)
-        self.assertEqual(str(FACE_ONE), self.sensor.get_face()["FACE"])
+        current_face = int(self.sensor.get_face()["FACE"])
+        self.assertEqual(int(FACE_ONE), current_face)
 
     def tearDown(self):
         self.sensor.set_laser_pointer(OFF)

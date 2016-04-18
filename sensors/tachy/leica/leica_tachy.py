@@ -103,10 +103,13 @@ class LeicaTachy(Tachy):
         :return:
         """
         assert value in [1, 0]
-        current_face = int(self.get_face()["FACE"])
-        while str(value) != current_face:
+        current_face = self.get_face()["FACE"]
+        current_face = int(current_face)
+        logger.debug("FACE: %d" % current_face)
+        while int(value) != current_face:
             cmd = self.communicate(geocom.AUT_ChangeFace())
             current_face = int(self.get_face()["FACE"])
+            logger.debug("FACE: %d" % current_face)
             time.sleep(1)
 
     def get_face(self):
