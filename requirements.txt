@@ -22,4 +22,4 @@ kombu==3.0.35
 django-bootstrap3==7.0.1
 psycopg2
 six>=1.10.0
-python-logging>=0.4.6
+python-logstash>=0.4.6
