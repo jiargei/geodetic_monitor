@@ -139,7 +139,7 @@ class GeoCOMCommand(object):
             else:
                 return {'status': 412, 'description': get_geocom_error(geocom_returncode)}
         else:
-            return {'status': 400, 'descritption': 'GeoCOM regexp did not match'}
+            return {'status': 400, 'description': 'GeoCOM regexp did not match'}
 
 
 class COM_NullProc(GeoCOMCommand):

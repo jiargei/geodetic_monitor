@@ -9,7 +9,7 @@ from serial import STOPBITS_ONE
 
 # Package Import
 from sensors.tachy.base import Tachy
-from sensors.tachy import constants
+from sensors.tachy import base
 
 from sensors import base as b
 
@@ -24,19 +24,20 @@ class FakeTachy(Tachy):
     brand = "FaKeBrAnD"
     model = "FaKeMoDeL"
 
-    def __init__(self, device):
+    def __init__(self, device, *args, **kwargs):
+        super(FakeTachy, self).__init__(*args, **kwargs)
         self.__connected = True if device == "/dev/null" else False
         self.__horizontal_angle = random.randint(0, 399) + random.random()*1e-1
         self.__vertical_angle = random.randint(0, 199) + random.random()*1e-1
         self.__slope_distance = random.randint(1, 540) + random.random()
-        self.__laser_pointer = constants.OFF
-        self.__face = constants.FACE_ONE
+        self.__laser_pointer = base.OFF
+        self.__face = base.FACE_ONE
         self.__compensator_cross = random.random()*1e-4
         self.__compensator_length = random.random()*1e-4
-        self.__prism_constant = constants.MODEL_TYPE_CHOICE[1]
+        self.__prism_constant = 0.0175
         self.__reflector_height = 0.0
         self.__instrument_height = 0.0
-        self.__instrument_number = random.randint(1000, 9999)
+        self.__instrument_number = "95173"
         self.__instrument_name = "Fake Tachymeter v0.1"
         self.__easting = random.randint(-3000, 4000) + random.random()*1e2
         self.__northing = random.randint(336200, 336999) + random.random()*1e2
@@ -53,23 +54,47 @@ class FakeTachy(Tachy):
         self.__atr_mode = 1
         self.__hz_tolerance = 0.0030
         self.__v_tolerance = 0.0030
+        self.__level = True
 
-    TACHYMETER_TYPE = "Fake Tachymeter"
+    @property
+    def model_type(self):
+        return "Fake"
 
-    def get_measurement(self):
+    def get_compensator(self):
         d = {
-            "HORIZONTAL_ANGLE": self.__horizontal_angle + random.random()*1e-4,
-            "VERTICAL_ANGLE": self.__vertical_angle + random.random()*1e-4,
-            "SLOPE_DISTANCE": self.__slope_distance + random.random()*1e-3,
+            "COMPENSATOR_CROSS": self.__compensator_cross,
+            "COMPENSATOR_LENGTH": self.__compensator_length
         }
-        d.update(b.create_date())
-        d.update(b.create_uid())
         return d
+
+    def set_level(self, value):
+        assert isinstance(value, bool)
+        self.__level = value
+
+    def set_angles(self, hz, v, atr):
+        self.__horizontal_angle = hz
+        self.__vertical_angle = v
+
+    def set_polar(self, horizontal_angle, vertical_angle, aim_target=False):
+        self.set_angles(horizontal_angle, vertical_angle, aim_target)
+
+    def set_search_windows(self, search_horizontal, search_vertical):
+        self.__hz_tolerance = search_horizontal
+        self.__v_tolerance = search_vertical
+
+    def get_target(self):
+        d = {
+            "status": 200,
+            "EASTING": self.__easting,
+            "NORTHING": self.__northing,
+            "HEIGHT": self.__height
+        }
 
     def get_search_windows(self):
         return {
-            "SEARCH_VERTICAL": 0.,
-            "SEARCH_HORIZONTAL": 0.,
+            "status": 200,
+            "SEARCH_VERTICAL": self.__hz_tolerance,
+            "SEARCH_HORIZONTAL": self.__v_tolerance,
         }
 
     def get_model_id(self):
@@ -80,21 +105,26 @@ class FakeTachy(Tachy):
 
         :return:
         """
-        print "Switch OFF"
+        return {"status": 200, "description": "Switch OFF"}
 
     def switch_on(self):
         """
 
         :return:
         """
-        print "Switch ON"
-
+        return {"status": 200, "description": "Switch ON"}
 
     def get_response(self):
-        return self.__connected
+        return {
+            "status": 200,
+            "description": "connected: %s" % self.__connected
+        }
 
     def get_temperature(self):
-        return {"TEMPERATURE": self.__temperature}
+        return {
+            "status": 200,
+            "TEMPERATURE": self.__temperature
+        }
 
     def set_instrument_modes(self, atr_mode, edm_mode, hz_tolerance, v_tolerance):
         """
@@ -124,7 +154,7 @@ class FakeTachy(Tachy):
         self.__laser_pointer = value
 
     def get_laser_pointer(self):
-        return {"LASERPOINTER": self.__laser_pointer}
+        return {"status": 200, "LASERPOINTER": self.__laser_pointer}
 
     def get_angles(self, use_atr):
         """
@@ -132,47 +162,41 @@ class FakeTachy(Tachy):
         :param use_atr:
         :return:
         """
-        return {"HORIZONTAL_ANGLE": self.__horizontal_angle + random.random()*1e-3,
-                "VERTICAL_ANGLE": self.__vertical_angle + random.random()*1e-3}
+        return {
+            "status": 200,
+            "HORIZONTAL_ANGLE": self.__horizontal_angle + random.random()*1e-3,
+            "VERTICAL_ANGLE": self.__vertical_angle + random.random()*1e-3
+        }
 
     def get_slope_distance(self):
-        return {"SLOPE_DISTANCE": self.__slope_distance + random.random()*1e-4}
-
-    def get_compensator_cross(self):
-        return {'CROSS_INCLINE': self.__compensator_cross + random.random()*1e-5}
-
-    def get_compensator_length(self):
-        return {"LENGTH_INCLINE": self.__compensator_length + random.random()*1e-5}
+        return {"status": 200, "SLOPE_DISTANCE": self.__slope_distance + random.random()*1e-4}
 
     def get_face(self):
-        return {"FACE": self.__face}
-
-    def get_horizontal_angle(self):
-        return {"HORIZONTAL_ANGLE": (self.__face*200 + self.__horizontal_angle + random.random()*1e-3) % 400}
+        return {"status": 200, "FACE": self.__face}
 
     def get_prism_constant(self):
-        return {"PRISM_CONSTANT": self.__prism_constant}
+        return {"status": 200, "PRISM_CONSTANT": self.__prism_constant}
 
     def get_reflector_height(self):
-        return {"REFLECTOR_HEIGHT": self.__reflector_height}
+        return {"status": 200, "REFLECTOR_HEIGHT": self.__reflector_height}
 
     def get_instrument_number(self):
-        return {"INSTRUMENT_NUMBER": self.__instrument_number}
+        return {"status": 200, "INSTRUMENT_NUMBER": self.__instrument_number}
 
     def get_instrument_name(self):
-        return {"INSTRUMENT_NAME": self.__instrument_name}
+        return {"status": 200, "INSTRUMENT_NAME": self.__instrument_name}
 
     def get_station(self):
-        return {'EASTING': self.__easting,
-                'NORTHING': self.__northing,
-                'HEIGHT': self.__height,
-                'INSTRUMENT_HEIGHT': self.__instrument_height}
-
-    def get_vertical_angle(self):
-        return {"VERTICAL_ANGLE": self.__vertical_angle if self.__face == 0 else 400 - self.__vertical_angle}
+        return {
+            "status": 200,
+            'EASTING': self.__easting,
+            'NORTHING': self.__northing,
+            'HEIGHT': self.__height,
+            'INSTRUMENT_HEIGHT': self.__instrument_height
+        }
 
     def get_orientation(self):
-        return {"ORIENTATION": self.__orientation}
+        return {"status": 200, "ORIENTATION": self.__orientation}
 
     def set_compensator_cross(self, value):
         self.__compensator_cross = value
@@ -199,10 +223,16 @@ class FakeTachy(Tachy):
         self.__reflector_height = value
 
     def set_instrument_number(self, value):
-        print "Seriennummer kann nicht verändert werden!"
+        return {
+            "status": 200,
+            "description": "Seriennummer kann nicht verändert werden!"
+        }
 
     def set_instrument_name(self, value):
-        print "Gerätename ist nicht veränderbar!"
+        return {
+            "status": 200,
+            "description": "Gerätename ist nicht veränderbar!"
+        }
 
     def set_slope_distance(self, value):
         self.__slope_distance = value
@@ -216,49 +246,19 @@ class FakeTachy(Tachy):
     def set_vertical_angle(self, value):
         self.__vertical_angle = value
 
-    def set_path(self, value):
-        self.__path = value
-
-    def get_path(self):
-        return {"PATH": self.__path}
-
-    def set_baudrate(self, value):
-        self.__baudrate = value
-
-    def get_baudrate(self):
-        return {"BAUDRATE": self.__baudrate}
-
-    def set_bytesize(self, value):
-        self.__bytesize = value
-
-    def get_bytesize(self):
-        return {"BYTESIZE": self.__bytesize}
-
-    def set_stopbits(self, value):
-        self.__stopbits = value
-
-    def get_stopbits(self):
-        return {"STOPBITS": self.__stopbits}
-
-    def set_parity(self, value):
-        self.__parity = value
-
-    def get_parity(self):
-        return {"PARITY": self.__parity}
-
     def connect(self):
         """
 
         :return:
         """
-        return {"SUCCESS": self.__connected}
+        return {"status": 200, "SUCCESS": self.__connected}
 
     def clear(self):
         """
         Bereinige Speicher, Cache, etc.
         :return:
         """
-        return {"SUCCESS": True}
+        return {"status": 200, "SUCCESS": True}
 
     def turn_to(self, horizontal_angle, vertical_angle):
         """
@@ -270,20 +270,28 @@ class FakeTachy(Tachy):
         self.__horizontal_angle = horizontal_angle + random.random()*1e-5
         self.__vertical_angle = vertical_angle + random.random()*1e-5
 
-    def measure(self):
-        return {"HORIZONTAL_ANGLE": self.get_horizontal_angle()["HORIZONTAL_ANGLE"],
-                "VERTICAL_ANGLE": self.get_vertical_angle()["VERTICAL_ANGLE"],
-                "SLOPE_DISTANCE": self.get_slope_distance()["SLOPE_DISTANCE"],
-                "TEMPERATURE": self.get_temperature()["TEMPERATURE"],
-                "FACE": self.get_face()["FACE"],
-                "UID": generate.generate_id(),
-                "PPM_CORR": random.random()*1e-4,
-                "CROSS_INCLINE": self.get_compensator_cross()["CROSS_INCLINE"],
-                "LENGTH_INCLINE": self.get_compensator_length()["LENGTH_INCLINE"],
-                "REFLECTOR_HEIGHT": 0.0,
-                "PRISM_CORR": constants.PrismConstant.PRISM_MINI,
-                "CREATED": generate.generate_datestring()}
+    def get_measurement(self):
+        d = {
+            "status": 200,
+            "HORIZONTAL_ANGLE": self.__horizontal_angle + random.random()*1e-4,
+            "VERTICAL_ANGLE": self.__vertical_angle + random.random()*1e-4,
+            "SLOPE_DISTANCE": self.__slope_distance + random.random()*1e-3,
+            "TEMPERATURE": self.get_temperature()["TEMPERATURE"],
+            "FACE": self.get_face()["FACE"],
+            "UID": generate.generate_id(),
+            "PPM_CORR": random.random()*1e-4,
+            "REFLECTOR_HEIGHT": 0.0,
+            "PRISM_CORR": self.__prism_constant,
+            "CREATED": generate.generate_datestring()
+        }
+        d.update(self.get_compensator())
+        d.update(b.create_date())
+        d.update(b.create_uid())
+        return d
 
     def is_leveled(self):
-        return True
+        return {
+            "status": 200,
+            "description": "Leveled: %s" % self.__level
+        }
 
