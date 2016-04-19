@@ -4,6 +4,8 @@ from dimosy.celery import app
 import serial
 import json
 
+from django.utils import timezone
+
 from .models import Reference, Position
 from sensors import tachy
 from geodetic.calculations import polar
@@ -15,7 +17,7 @@ logger = logging.getLogger(__name__)
 @app.task(bind=True)
 def meter_task(self, reference_id):
 
-    tmp_file = "/vagrant/elk/tmp/log/tachy_20160814.log"
+    tmp_file = "/vagrant/elk/tmp/log/tachy_%s.log" % timezone.now().strftime("%Y%m%d")
 
     reference = Reference.objects.get(pk=reference_id)
 

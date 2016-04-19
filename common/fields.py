@@ -34,6 +34,17 @@ class UIDField(models.CharField):
         return name, path, args, kwargs
 
 
+@Field.register_lookup
+class ContentTypeLookup(Lookup):
+    lookup_name = "ct"
+
+    def as_sql(self, compiler, connection):
+        lhs, lhs_params = compiler.compile(self.lhs.lhs)
+        rhs, rhs_params = self.process_rhs(compiler, connection)
+        params = lhs_params + rhs_params
+        return 
+
+
 # @Field.register_lookup
 # class DatetimeLookup(Lookup):
 #

@@ -98,8 +98,10 @@ class Position(models.Model):
 
 
 class Reference(models.Model):
-    # TODO
-    # id = UIDField()
+    """
+    
+    """
+    id = UIDField()
     position = models.ForeignKey(Position, related_name='references')
     target = models.ForeignKey('metering.Target', related_name='references')
 

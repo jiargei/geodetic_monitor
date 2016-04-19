@@ -1,12 +1,13 @@
 import logging
+import json
+
+from django.utils import timezone
 
 from dimosy.celery import app
-
-
-logger = logging.getLogger(__name__)
-
 from .models import PeriodicTask
 from ..metering.tasks import meter_task
+
+logger = logging.getLogger(__name__)
 
 
 @app.task(bind=True)
@@ -17,5 +18,16 @@ def schedule(self):
     logger.debug("Checking %s tasks...", len(tasks))
     for task in tasks:
         if task.is_due():
+            tmd = {
+                "task_id": task.id,
+                "object_id": task.object_id,
+                "content_type": task.content_type,
+                "project": task.project.id,
+                "info": str(task)
+            }
+            tmp_file = "/vagrant/elk/tmp/log/task_%s.log" % timezone.now().strftime("%Y%m%d")
+            f = open(tmp_file, 'a')
+            f.write(b=json.dumps(tmd))
+            f.close()
             logger.debug("Applying task %s...", task)
             meter_task.apply_async([task.id])
