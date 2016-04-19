@@ -6,4 +6,4 @@ def get_sensor_type_choices():
 
 
 def get_sensor_model_choices():
-    return sensor_registry.items()
+    return [(k, cls.get_name()) for k, cls in sensor_registry.items()]

@@ -119,6 +119,22 @@ class Target(Coordinate):
     status = models.PositiveSmallIntegerField(default=constants.STATUS_ACTIVE,
                                               choices=constants.STATUS_CHOICES,
                                               db_index=True)
+    point_type = models.CharField(max_length=1, choices=constants.TARGET_TYPE_CHOICES, default='d')
 
     def __unicode__(self):
         return u"%s-%s" % (self.project.token, self.name)
+
+
+class Profile(models.Model):
+    """
+
+    """
+    id = UIDField()
+    targets = models.ManyToManyField("metering.Target", related_name="profiles")
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    project = models.ForeignKey("accounts.Project")
+    p1_easting = models.DecimalField(default=0., max_digits=10, decimal_places=3)
+    p1_northing = models.DecimalField(default=0., max_digits=10, decimal_places=3)
+    p2_easting = models.DecimalField(default=0., max_digits=10, decimal_places=3)
+    p2_northing = models.DecimalField(default=0., max_digits=10, decimal_places=3)

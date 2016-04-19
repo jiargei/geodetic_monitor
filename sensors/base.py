@@ -7,8 +7,9 @@ class Sensor(object):
 
     __metaclass__ = ABCMeta
 
-    def get_name(self):
-        return "%s %s" % (self.brand, self.model)
+    @classmethod
+    def get_name(cls):
+        return "%s %s" % (cls.brand, cls.model)
 
     @abstractproperty
     def sensor_type(self):

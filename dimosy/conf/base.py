@@ -84,7 +84,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'dimosy',
         'USER': 'dimosy',
+        'HOST': 'localhost',
         'DATABASE': 'dimosy',
+        'PASSWORD': 'dimosy',
     }
 }
 
@@ -146,7 +148,8 @@ ROLLBAR = {
 # rollbar.init(**ROLLBAR)
 
 SENSORS = (
-    'sensors.tachy.leica.tps_1100.TPS1100',
+    'sensors.tachy.leica.leica_tachy_tps1100.TPS1100',
+    'sensors.tachy.leica.leica_tachy_ts15.TS15',
 )
 BOX_ID = None
 

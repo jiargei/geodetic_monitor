@@ -18,6 +18,7 @@ def schedule(self):
     logger.debug("Checking %s tasks...", len(tasks))
     for task in tasks:
         if task.is_due():
+
             tmd = {
                 "task_id": task.id,
                 "object_id": task.object_id,
@@ -29,5 +30,6 @@ def schedule(self):
             f = open(tmp_file, 'a')
             f.write(b=json.dumps(tmd))
             f.close()
+
             logger.debug("Applying task %s...", task)
             meter_task.apply_async([task.id])
