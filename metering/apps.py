@@ -21,5 +21,5 @@ class Metering(AppConfig):
         if sensor_class_list:
             import_string(sensor_class_list[0])
         for s in sensor_class_list:
-            logger.info("Adding Sensor '%s'.." % s)
+            logger.debug("Adding Sensor '%s'.." % s)
             sensor_registry[s] = import_string(s)

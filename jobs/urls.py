@@ -13,6 +13,6 @@ task_patterns = [
 ]
 
 urlpatterns = [
-    url(r'^projects/(?P<project_id>[A-Za-z0-9]+)/tasks/',
+    url(r'^projects/(?P<project_id>[A-Za-z0-9]+)/jobs/',
         include(task_patterns)),
 ]

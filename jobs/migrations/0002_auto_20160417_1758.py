@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('contenttypes', '0002_remove_content_type_name'),
         ('accounts', '0001_initial'),
-        ('tasks', '0001_initial'),
+        ('jobs', '0001_initial'),
     ]
 
     operations = [

@@ -40,7 +40,7 @@ INSTALLED_APPS = (
     'accounts',
     'alarms',
     'metering',
-    'tasks',
+    'jobs',
     'import_export',
 )
 
@@ -65,7 +65,7 @@ LOGGING = {
         },
     },
     'loggers': {
-        'tasks': {
+        'jobs': {
             'handlers': ['console'],
             'level': 'DEBUG',
         },
@@ -150,16 +150,16 @@ ROLLBAR = {
 # rollbar.init(**ROLLBAR)
 
 SENSORS = (
-    'sensors.tachy.leica.leica_tachy_tps1100.TPS1100',
-    'sensors.tachy.leica.leica_tachy_ts15.TS15',
     'sensors.tachy.fake.fake_tachy.FakeTachy',
+    'sensors.tachy.leica.leica_tachy_tps1100.TPS1100',
+    'sensors.tachy.leica.leica_tachy_ts15.TS15'
 )
 BOX_ID = None
 
 from datetime import timedelta
 CELERYBEAT_SCHEDULE = {
-    'schedule-tasks': {
-        'task': 'tasks.tasks.schedule',
+    'schedule-jobs': {
+        'task': 'jobs.jobs.schedule',
         'schedule': timedelta(seconds=1),
     },
 }

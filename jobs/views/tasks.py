@@ -26,18 +26,18 @@ class TaskMixin(ProjectMixin):
 
 
 class List(TaskMixin, generic.ListView):
-    template_name = 'tasks/task/list.html'
+    template_name = 'jobs/task/list.html'
 
 
 class Update(TaskMixin, generic.UpdateView):
     form_class = forms.Update
-    template_name = 'tasks/task/update.html'
+    template_name = 'jobs/task/update.html'
 
 
 class Create(TaskMixin, generic.CreateView):
     form_class = forms.Create
-    template_name = 'tasks/task/create.html'
+    template_name = 'jobs/task/create.html'
 
 
 class Delete(TaskMixin, generic.DeleteView):
-    template_name = 'tasks/task/confirm_delete.html'
+    template_name = 'jobs/task/confirm_delete.html'

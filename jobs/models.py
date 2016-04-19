@@ -41,7 +41,7 @@ class PeriodicTask(models.Model):
     task_object = GenericForeignKey(ct_field='content_type', fk_field='object_id')
 
     def __unicode__(self):
-        return u"von %s, bis %s, alle %s Minten" % (
+        return u"von %s, bis %s, alle %s Minuten" % (
             self.start_time, self.end_time, self.frequency
         )
 

@@ -8,11 +8,11 @@ from django.utils import timezone
 from django.core.serializers.json import DjangoJSONEncoder
 
 from .models import Reference, Position
-from tasks.models import PeriodicTask
+from jobs.models import PeriodicTask
+import apps
 from sensors import tachy
 from geodetic.calculations import polar
 from geodetic.point import Point
-from common.utils.generate import generate_datestring
 logger = logging.getLogger(__name__)
 
 
@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 def meter_task(self, task_id):
 
     tmp_file = "/vagrant/elk/tmp/log/tachy_%s.log" % timezone.now().strftime("%Y%m%d")
+    # Metering().ready()
 
     reference_id = task_id
     reference = None
@@ -36,11 +37,9 @@ def meter_task(self, task_id):
     target_p.set_coordinate(reference.target)
 
     folding_square = polar.grid_to_polar(station_p, target_p)
-    sensor_db = station.sensor
-    dev_port = sensor_db.connection.port
 
-    sensor_class = sensor_db.get_sensor_class()
-    sensor_serial = serial.Serial(port=dev_port, timeout=5)
+    sensor_class = station.sensor.get_sensor_class()
+    sensor_serial = serial.Serial(port=station.sensor.connection.port, timeout=5)
 
     assert sensor_class is not None
 
