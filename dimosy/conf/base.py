@@ -41,6 +41,7 @@ INSTALLED_APPS = (
     'alarms',
     'metering',
     'tasks',
+    'import_export',
 )
 
 
@@ -109,6 +110,7 @@ AUTH_USER_MODEL = 'accounts.User'
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = "/var/www/dimosy.com/static/"
 
 
 # rest_framework Settings
