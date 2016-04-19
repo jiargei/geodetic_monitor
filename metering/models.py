@@ -33,7 +33,7 @@ class Sensor(models.Model):
     sensor_serial = models.CharField(max_length=20, unique=True)
     sensor_model = models.CharField(db_index=True, blank=True, null=True,
                                     choices=get_sensor_model_choices(),
-                                    max_length=80)
+                                    max_length=100)
 
     def __unicode__(self):
         # return u"%s-%s" % (dict(constants.SENSOR_TYPE_CHOICES).get(self.sensor_type), self.sensor_name)
