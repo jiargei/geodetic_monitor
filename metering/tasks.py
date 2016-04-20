@@ -13,36 +13,49 @@ import apps
 from sensors import tachy
 from geodetic.calculations import polar
 from geodetic.point import Point
+import sensors
 logger = logging.getLogger(__name__)
 
 
 @app.task(bind=True)
 def meter_task(self, task_id):
+    """
 
-    tmp_time = timezone.localtime(timezone.now())
-    tmp_file = "/tmp/dimosy/elk/log/tachy_%s.log" % tmp_time.strftime("%Y%m%d")
+    :param self:
+    :param task_id:
+    :return:
+    """
 
     task = PeriodicTask.objects.get(pk=task_id)
+    logger.info("Execute task %s...", task.id)
+
+    tmp_time = timezone.localtime(timezone.now())
+
     reference = task.task_object
 
     assert isinstance(reference, Reference)
 
     station = reference.position.stations.latest()
     station_p = Point()
-    station_p.set_coordinate(station)
+    station_p.set_coordinate(station.get_point())
     target_p = Point()
-    target_p.set_coordinate(reference.target)
+    target_p.set_coordinate(reference.target.get_point())
 
     folding_square = polar.grid_to_polar(station_p, target_p)
 
     sensor_class = station.sensor.get_sensor_class()
-    sensor_serial = serial.Serial(port=station.sensor.connection.port, timeout=5)
 
     assert sensor_class is not None
+    logger.info("Sensor on port %s" % station.port)
 
-    sensor_class(serial=sensor_serial)
-    sensor_class.set_angles(hz=folding_square["azimut"],
-                           v=folding_square["zenit"])
+    if sensor_class.__name__ == "FakeTachy":
+        sensor_class = sensor_class(port=station.port)
+    else:
+        sensor_class = sensor_class(serial=serial.Serial(port=station.port, timeout=5))
+
+    sensor_class.set_polar(horizontal_angle=folding_square["azimut"],
+                           vertical_angle=folding_square["zenit"],
+                           aim_target=True)
 
     tm = sensor_class.get_measurement()
     tl = sensor_class.get_compensator()
@@ -88,16 +101,17 @@ def meter_task(self, task_id):
             "reflector_height": 0.0,  # TODO
            },
         "obtained": {
-            "deasting": tm["EASTING"] - reference.target.easting,
-            "dnorthing": tm["NORTHING"] - reference.target.northing,
-            "dheight": tm["HEIGHT"] - reference.target.height,
+            "deasting": tc["EASTING"] - reference.target.easting,
+            "dnorthing": tc["NORTHING"] - reference.target.northing,
+            "dheight": tc["HEIGHT"] - reference.target.height,
             "slope_distance_reduced": tm["SLOPE_DISTANCE"],  # TODO ..
             "profiles": profiles,
         },
     }
 
+    tmp_file = "/tmp/dimosy/elk/log/tachy_%s.log" % tmp_time.strftime("%Y%m%d")
     f = open(tmp_file, 'a')
-    f.write(b=json.dumps(tmd, cls=DjangoJSONEncoder))
+    f.write(str(json.dumps(tmd, cls=DjangoJSONEncoder))+"\n")
     f.close()
     task.last_started = tmp_time
     task.save()

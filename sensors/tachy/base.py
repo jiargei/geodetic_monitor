@@ -57,7 +57,6 @@ class Tachy(Sensor):
 
         self.set_laser_pointer(self.__laserpointer_state)
 
-    @abstractmethod
     def set_polar(self, horizontal_angle, vertical_angle, aim_target=False):
         """
 
@@ -66,6 +65,7 @@ class Tachy(Sensor):
         :param aim_target:
         :return:
         """
+        self.set_angles(horizontal_angle, vertical_angle, aim_target)
 
     @abstractmethod
     def set_search_windows(self, search_horizontal, search_vertical):
@@ -294,13 +294,13 @@ class Tachy(Sensor):
                           face=face,
                           atr=False)
 
-    @abstractmethod
-    def get_measurement(self):
-        """
-        Perform Measurement to aimed Target
-        :return: HORIZONTAL_ANGLE, VERTICAL_ANGLE, SLOPE_DISTANCE, CREATED, UID
-        :rtype: dict
-        """
+    # @abstractmethod
+    # def get_measurement(self):
+    #     """
+    #     Perform Measurement to aimed Target
+    #     :return: HORIZONTAL_ANGLE, VERTICAL_ANGLE, SLOPE_DISTANCE, CREATED, UID
+    #     :rtype: dict
+    #     """
 
     @abstractmethod
     def get_target(self):

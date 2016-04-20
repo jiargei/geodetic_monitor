@@ -34,7 +34,6 @@ class Project(UserCreatedMixin, models.Model):
     class Meta:
         ordering = ["active", "name"]
 
-
     def __unicode__(self):
         return u"%s - %s" % (self.token, self.name)
 

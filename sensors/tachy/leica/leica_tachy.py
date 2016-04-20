@@ -125,14 +125,21 @@ class LeicaTachy(Tachy):
     def set_orientation(self, orientation):
         return self.communicate(geocom.TMC_SetOrientation(orientation))
 
-    def set_polar(self, horizontal_angle, vertical_angle, aim_target=False):
-        if aim_target:
+    def set_angles(self, hz, v, atr):
+        """
+
+        :param hz:
+        :param v:
+        :param atr:
+        :return:
+        """
+        if atr:
             atr_mode = aut.AUT_TARGET
         else:
             atr_mode = aut.AUT_POSITION
-        return self.communicate(geocom.AUT_MakePositioning(horizontal_angle,
-                                                           vertical_angle,
-                                                           atr_mode))
+        return self.communicate(geocom.AUT_MakePositioning(horizontal_angle=hz,
+                                                           vertical_angle=v,
+                                                           atr_mode=atr_mode))
 
     def get_polar(self):
         get_hzv = self.communicate(geocom.TMC_GetAngle1())
@@ -271,22 +278,6 @@ class LeicaTachy(Tachy):
             lp.update(self.get_laser_pointer())
 
         return lp
-
-    def set_angles(self, hz, v, atr):
-        """
-
-        :param hz:
-        :param v:
-        :param atr:
-        :return:
-        """
-        if atr:
-            atr_mode = aut.AUT_TARGET
-        else:
-            atr_mode = aut.AUT_POSITION
-        return self.communicate(geocom.AUT_MakePositioning(horizontal_angle=hz,
-                                                           vertical_angle=v,
-                                                           atr_mode=atr_mode))
 
     def set_instrument_modes(self, atr_mode, edm_mode, hz_tolerance, v_tolerance):
         """

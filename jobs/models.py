@@ -58,12 +58,11 @@ class PeriodicTask(models.Model):
 
         dt0 = (temp_time - timezone.datetime(1970, 1, 1, tzinfo=timezone.get_current_timezone())).total_seconds()
 
-
         if self.active \
                 and self.start_time <= temp_time.time() <= self.end_time \
                 and (
                         (dt1 / 60.) >= self.frequency
-                        or (dt0 % (60. * float(self.frequency))) <= 5
+                        or (dt0 % (60. * float(self.frequency))) <= 3
                 ):
             return True
         return False

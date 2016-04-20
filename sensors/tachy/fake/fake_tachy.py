@@ -23,10 +23,12 @@ class FakeTachy(Tachy):
 
     brand = "FaKeBrAnD"
     model = "FaKeMoDeL"
+    model_type = "Fake"
+    sensor_type = "Fake"
 
-    def __init__(self, device, *args, **kwargs):
+    def __init__(self, port, *args, **kwargs):
         super(FakeTachy, self).__init__(*args, **kwargs)
-        self.__connected = True if device == "/dev/null" else False
+        self.__connected = True if port == "/dev/null" else False
         self.__horizontal_angle = random.randint(0, 399) + random.random()*1e-1
         self.__vertical_angle = random.randint(0, 199) + random.random()*1e-1
         self.__slope_distance = random.randint(1, 540) + random.random()
@@ -43,7 +45,7 @@ class FakeTachy(Tachy):
         self.__northing = random.randint(336200, 336999) + random.random()*1e2
         self.__height = random.randint(156, 240) + random.random()*1e1
         self.__orientation = random.randint(0, 399) + random.random()*1e-1
-        self.__temperature = random.randint(-1, 18) + random.random()*1e-1
+        self.__temperature = 21.14 + random.random()*1e-1
         self.__path = "/dev/null"
         self.__baudrate = 9600
         self.__bytesize = EIGHTBITS
@@ -56,9 +58,24 @@ class FakeTachy(Tachy):
         self.__v_tolerance = 0.0030
         self.__level = True
 
-    @property
-    def model_type(self):
-        return "Fake"
+    def set_instrument_name(self, value):
+        """
+        NOT ALLOWED
+        :param value:
+        :return:
+        """
+        pass
+
+    def set_instrument_number(self, value):
+        """
+        NOT ALLOWED
+        :param value:
+        :return:
+        """
+        pass
+
+    def fine_adjust(self):
+        return {"status": 200, "description": "Aiming at target"}
 
     def get_compensator(self):
         d = {
@@ -67,28 +84,35 @@ class FakeTachy(Tachy):
         }
         return d
 
-    def set_level(self, value):
-        assert isinstance(value, bool)
-        self.__level = value
-
     def set_angles(self, hz, v, atr):
+        """
+
+        :param hz:
+        :param v:
+        :param atr:
+        :return:
+        """
         self.__horizontal_angle = hz
         self.__vertical_angle = v
 
-    def set_polar(self, horizontal_angle, vertical_angle, aim_target=False):
-        self.set_angles(horizontal_angle, vertical_angle, aim_target)
+    def get_angles(self, use_atr):
+        """
+        Liefert die Aktuellen Stellwinkel zurück
+        :param use_atr:
+        :return:
+        """
+        eps_hz = random.random()*4e-4 if use_atr else random.random()*2e-3
+        eps_v = random.random()*4e-4 if use_atr else random.random()*2e-3
+
+        return {
+            "status": 200,
+            "HORIZONTAL_ANGLE": self.__horizontal_angle + eps_hz,
+            "VERTICAL_ANGLE": self.__vertical_angle + eps_v
+        }
 
     def set_search_windows(self, search_horizontal, search_vertical):
         self.__hz_tolerance = search_horizontal
         self.__v_tolerance = search_vertical
-
-    def get_target(self):
-        d = {
-            "status": 200,
-            "EASTING": self.__easting,
-            "NORTHING": self.__northing,
-            "HEIGHT": self.__height
-        }
 
     def get_search_windows(self):
         return {
@@ -97,8 +121,14 @@ class FakeTachy(Tachy):
             "SEARCH_HORIZONTAL": self.__v_tolerance,
         }
 
-    def get_model_id(self):
-        return 19
+    def get_target(self):
+        d = {
+            "status": 200,
+            "EASTING": self.__easting,
+            "NORTHING": self.__northing,
+            "HEIGHT": self.__height
+        }
+        return d
 
     def switch_off(self):
         """
@@ -156,21 +186,6 @@ class FakeTachy(Tachy):
     def get_laser_pointer(self):
         return {"status": 200, "LASERPOINTER": self.__laser_pointer}
 
-    def get_angles(self, use_atr):
-        """
-        Liefert die Aktuellen Stellwinkel zurück
-        :param use_atr:
-        :return:
-        """
-        return {
-            "status": 200,
-            "HORIZONTAL_ANGLE": self.__horizontal_angle + random.random()*1e-3,
-            "VERTICAL_ANGLE": self.__vertical_angle + random.random()*1e-3
-        }
-
-    def get_slope_distance(self):
-        return {"status": 200, "SLOPE_DISTANCE": self.__slope_distance + random.random()*1e-4}
-
     def get_face(self):
         return {"status": 200, "FACE": self.__face}
 
@@ -195,9 +210,6 @@ class FakeTachy(Tachy):
             'INSTRUMENT_HEIGHT': self.__instrument_height
         }
 
-    def get_orientation(self):
-        return {"status": 200, "ORIENTATION": self.__orientation}
-
     def set_compensator_cross(self, value):
         self.__compensator_cross = value
 
@@ -206,12 +218,6 @@ class FakeTachy(Tachy):
 
     def set_face(self, value):
         self.__face = value
-
-    def set_horizontal_angle(self, value):
-        self.__horizontal_angle = value
-
-    def set_instrument(self, atr_mode, edm_mode, hz_tolerance, v_tolerance):
-        pass
 
     def set_orientation(self, value):
         self.__orientation = value
@@ -222,29 +228,11 @@ class FakeTachy(Tachy):
     def set_reflector_height(self, value):
         self.__reflector_height = value
 
-    def set_instrument_number(self, value):
-        return {
-            "status": 200,
-            "description": "Seriennummer kann nicht verändert werden!"
-        }
-
-    def set_instrument_name(self, value):
-        return {
-            "status": 200,
-            "description": "Gerätename ist nicht veränderbar!"
-        }
-
-    def set_slope_distance(self, value):
-        self.__slope_distance = value
-
     def set_station(self, easting, northing, height, instrument_height):
         self.__easting = easting
         self.__northing = northing
         self.__height = height
         self.__instrument_height = instrument_height
-
-    def set_vertical_angle(self, value):
-        self.__vertical_angle = value
 
     def connect(self):
         """
@@ -259,16 +247,6 @@ class FakeTachy(Tachy):
         :return:
         """
         return {"status": 200, "SUCCESS": True}
-
-    def turn_to(self, horizontal_angle, vertical_angle):
-        """
-
-        :param horizontal_angle:
-        :param vertical_angle:
-        :return:
-        """
-        self.__horizontal_angle = horizontal_angle + random.random()*1e-5
-        self.__vertical_angle = vertical_angle + random.random()*1e-5
 
     def get_measurement(self):
         d = {
@@ -294,4 +272,3 @@ class FakeTachy(Tachy):
             "status": 200,
             "description": "Leveled: %s" % self.__level
         }
-

@@ -45,7 +45,7 @@ class FakeTachySensorTestCase(TachySensorTestCase):
         super(FakeTachySensorTestCase, self).__init__(*args, **kwargs)
 
     def setUp(self):
-        self.sensor = FakeTachy(device='/dev/null')
+        self.sensor = FakeTachy(port='/dev/null')
 
     def test_get_sensor_name(self):
         logger.debug("Testing sensor name")
