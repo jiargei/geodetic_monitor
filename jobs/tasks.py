@@ -19,20 +19,20 @@ def schedule(self):
     tasks = PeriodicTask.objects.filter(active=True)
     logger.debug("Checking %s jobs...", len(tasks))
     for task in tasks:
-        if task.is_due():
-            tmd = {
-                "task_id": task.id,
-                "object_id": task.object_id,
-                "content_type": task.content_type.__class__.__name__,
-                "project": task.project.id,
-                "info": str(task)
-            }
-            tmp_file = "/tmp/dimosy/elk/log/task_%s.log" % tmp_time.strftime("%Y%m%d")
-            f = open(tmp_file, 'a')
-            f.write(str(json.dumps(tmd, cls=DjangoJSONEncoder))+"\n")
-            f.close()
-            logger.debug("wrote JSON to log file")
-            logger.debug("Applying task %s...", task.id)
-            task.last_started = tmp_time
-            task.save()
-            meter_task.apply_async([task.id])
+        if not task.is_due():
+            continue
+        tmd = {
+            "task_id": task.id,
+            "object_id": task.object_id,
+            "content_type": task.content_type.__class__.__name__,
+            "project": task.project.id,
+            "info": str(task)
+        }
+        tmp_file = "/tmp/dimosy/elk/log/task_%s.log" % timezone.localtime(timezone.now()).strftime("%Y%m%d")
+        f = open(tmp_file, 'a')
+        f.write(str(json.dumps(tmd, cls=DjangoJSONEncoder))+"\n")
+        f.close()
+        logger.debug("wrote JSON to log file")
+
+        logger.debug("Applying task %s...", task.id)
+        meter_task.apply_async([task.id])
