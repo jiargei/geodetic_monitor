@@ -19,11 +19,8 @@ logger = logging.getLogger(__name__)
 @app.task(bind=True)
 def meter_task(self, task_id):
 
-    tmp_file = "/vagrant/elk/tmp/log/tachy_%s.log" % timezone.now().strftime("%Y%m%d")
-    # Metering().ready()
-
-    reference_id = task_id
-    reference = None
+    tmp_time = timezone.localtime(timezone.now())
+    tmp_file = "/tmp/dimosy/elk/log/tachy_%s.log" % tmp_time.strftime("%Y%m%d")
 
     task = PeriodicTask.objects.get(pk=task_id)
     reference = task.task_object
@@ -57,7 +54,7 @@ def meter_task(self, task_id):
 
     tmd = {
         "id": tm["UID"],
-        "created": timezone.now(),
+        "created": tmp_time,
         "target": {
             "id": reference.target.pk,
             "easting": reference.target.easting,
@@ -102,6 +99,8 @@ def meter_task(self, task_id):
     f = open(tmp_file, 'a')
     f.write(b=json.dumps(tmd, cls=DjangoJSONEncoder))
     f.close()
+    task.last_started = tmp_time
+    task.save()
 
 
 

@@ -6,8 +6,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 
-import datetime
-
 from bitfield import BitField
 
 from accounts.models import Project
@@ -51,14 +49,20 @@ class PeriodicTask(models.Model):
         :return: True, if task should be executed, else False
         :rtype: bool
         """
+        temp_time = timezone.localtime(timezone.now())
 
-        dt1 = (timezone.now() - self.last_started).total_seconds()
-        dt0 = (timezone.now() - datetime.datetime(1970,1,1)).total_seconds()
+        if self.last_started is None:
+            dt1 = float(self.frequency) * 60
+        else:
+            dt1 = (temp_time - self.last_started).total_seconds()
+
+        dt0 = (temp_time - timezone.datetime(1970, 1, 1, tzinfo=timezone.get_current_timezone())).total_seconds()
+
 
         if self.active \
-                and self.start_time <= timezone.now() <= self.end_time \
+                and self.start_time <= temp_time.time() <= self.end_time \
                 and (
-                        (dt1.total_seconds() / 60.) >= self.frequency
+                        (dt1 / 60.) >= self.frequency
                         or (dt0 % (60. * float(self.frequency))) <= 5
                 ):
             return True
