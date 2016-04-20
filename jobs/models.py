@@ -62,7 +62,7 @@ class PeriodicTask(models.Model):
                 and self.start_time <= temp_time.time() <= self.end_time \
                 and (
                         (dt1 / 60.) >= self.frequency
-                        or (dt0 % (60. * float(self.frequency))) <= 3
+                        or (dt0 % (60. * float(self.frequency))) <= 5
                 ):
             return True
         return False

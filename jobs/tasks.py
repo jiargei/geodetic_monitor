@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 @app.task(bind=True)
 def schedule(self):
-
+    tmp_time = timezone.localtime(timezone.now())
     logger.debug("Execute schedule task...")
     # TODO add some filtering and check is_due
     tasks = PeriodicTask.objects.filter(active=True)
@@ -27,11 +27,12 @@ def schedule(self):
                 "project": task.project.id,
                 "info": str(task)
             }
-            tmp_file = "/tmp/dimosy/elk/log/task_%s.log" % timezone.localtime(timezone.now()).strftime("%Y%m%d")
+            tmp_file = "/tmp/dimosy/elk/log/task_%s.log" % tmp_time.strftime("%Y%m%d")
             f = open(tmp_file, 'a')
             f.write(str(json.dumps(tmd, cls=DjangoJSONEncoder))+"\n")
             f.close()
             logger.debug("wrote JSON to log file")
-
             logger.debug("Applying task %s...", task.id)
+            task.last_started = tmp_time
+            task.save()
             meter_task.apply_async([task.id])

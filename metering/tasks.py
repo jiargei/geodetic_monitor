@@ -113,8 +113,7 @@ def meter_task(self, task_id):
     f = open(tmp_file, 'a')
     f.write(str(json.dumps(tmd, cls=DjangoJSONEncoder))+"\n")
     f.close()
-    task.last_started = tmp_time
-    task.save()
+
 
 
 

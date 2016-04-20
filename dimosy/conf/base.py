@@ -160,6 +160,6 @@ from datetime import timedelta
 CELERYBEAT_SCHEDULE = {
     'schedule-jobs': {
         'task': 'jobs.tasks.schedule',
-        'schedule': timedelta(seconds=1),
+        'schedule': timedelta(seconds=5),
     },
 }
