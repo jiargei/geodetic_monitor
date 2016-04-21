@@ -9,6 +9,7 @@ import tmc
 import aut
 import geocom
 import logging
+from common.utils import angle
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -141,8 +142,8 @@ class LeicaTachy(Tachy):
             atr_mode = aut.AUT_TARGET
         else:
             atr_mode = aut.AUT_POSITION
-        return self.communicate(geocom.AUT_MakePositioning(horizontal_angle=hz,
-                                                           vertical_angle=v,
+        return self.communicate(geocom.AUT_MakePositioning(horizontal_angle=angle.gon2rad(hz),
+                                                           vertical_angle=angle.gon2rad(v),
                                                            atr_mode=atr_mode))
 
     def get_polar(self):
@@ -232,7 +233,7 @@ class LeicaTachy(Tachy):
 
         get_angle = self.communicate(geocom.TMC_GetAngle5())
         for key in geocom.TMC_GetAngle5.GEOCOM_PARAMETERS:
-            get_angle[key] = float(get_angle[key])
+            get_angle[key] = angle.rad2gon(float(get_angle[key]))
 
         return get_angle
 
@@ -268,8 +269,8 @@ class LeicaTachy(Tachy):
         :return:
         """
         get_angle = self.communicate(geocom.TMC_GetAngle1())
-        return {"COMPENSATOR_CROSS": get_angle["CROSS_INCLINE"],
-                "COMPENSATOR_LENGTH": get_angle["LENGTH_INCLINE"],
+        return {"COMPENSATOR_CROSS": angle.rad2gon(get_angle["CROSS_INCLINE"]),
+                "COMPENSATOR_LENGTH": angle.rad2gon(get_angle["LENGTH_INCLINE"]),
                 "status": get_angle["status"],
                 "description": get_angle["description"]}
 
