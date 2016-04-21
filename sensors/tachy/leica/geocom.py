@@ -305,7 +305,7 @@ class TMC_SetStation(GeoCOMCommand):
     This function is used to set the station coordinates of the instrument.
     """
 
-    def __init__(self, easting, northing, height, instrument_height = 0.0):
+    def __init__(self, easting, northing, height, instrument_height=0.0):
         self.__easting = easting
         self.__northing = northing
         self.__height = height

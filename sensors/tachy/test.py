@@ -53,6 +53,3 @@ class FakeTachySensorTestCase(TachySensorTestCase):
         logger.debug(r)
         self.assertTrue("Fake" in r["INSTRUMENT_NAME"],
                         msg="Sensor should be a Fake, got %s instead" % r["INSTRUMENT_NAME"])
-
-    def test_get_measurement(self):
-        pass

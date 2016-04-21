@@ -34,6 +34,10 @@ class SensorTestCase(unittest.TestCase):
     def test_get_sensor_name(self):
         pass
 
+    @abstractmethod
+    def test_get_measurement(self):
+        pass
+
 
 class TachySensorTestCase(SensorTestCase):
 
@@ -64,7 +68,16 @@ class TachySensorTestCase(SensorTestCase):
         logger.debug("Testing brand '%s'" % self.sensor.brand)
         r = self.sensor.get_brand()
         self.assertEqual(r["BRAND"], self.sensor.brand,
-                         msg="Sensor should be froom Leica Geosystems, got %s instead" % self.sensor.brand)
+                         msg="Sensor should be from Leica Geosystems, got %s instead" % self.sensor.brand)
+
+    def test_get_angles(self):
+        angles = self.sensor.get_angles(atr=False)
+        self.assertTrue("HORIZONTAL_ANGLE" in angles)
+        self.assertTrue("VERTICAL_ANGLE" in angles)
+
+    def test_get_measurement(self):
+        r = self.sensor.get_measurement()
+        self.assertTrue("SLOPE_DISTANCE" in r)
 
     def tearDown(self):
         self.sensor.set_laser_pointer(OFF)

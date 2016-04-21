@@ -37,11 +37,7 @@ def grid_to_polar(p1, p2, orientation=0):
     :return:
 
     """
-
-    logger.info("P1", p1)
-    logger.info("P2", p2)
     diff = p2.__sub__(p1)
-    logger.info("dP", diff)
 
     # T_21 = convert.corr_hz(convert.rad2gon(math.atan2(DIFF.X, DIFF.Y))) + orientation
     T_21 = convert.rad2gon(math.atan2(diff.x, diff.y)) + orientation

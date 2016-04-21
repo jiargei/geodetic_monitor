@@ -269,7 +269,9 @@ class LeicaTachy(Tachy):
         """
         get_angle = self.communicate(geocom.TMC_GetAngle1())
         return {"COMPENSATOR_CROSS": get_angle["CROSS_INCLINE"],
-                "COMPENSATOR_LENGTH": get_angle["LENGTH_INCLINE"]}
+                "COMPENSATOR_LENGTH": get_angle["LENGTH_INCLINE"],
+                "status": get_angle["status"],
+                "description": get_angle["description"]}
 
     def set_laser_pointer(self, value):
         """
