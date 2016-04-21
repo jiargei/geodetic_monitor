@@ -28,7 +28,7 @@ def schedule(self):
             "project": task.project.id,
             "info": str(task)
         }
-        tmp_file = "/tmp/dimosy/elk/log/task_%s.log" % tmp_time.strftime("%Y%m%d")
+        tmp_file = "/vagrant/tmp/log/task_%s.log" % tmp_time.strftime("%Y%m%d")
         f = open(tmp_file, 'a')
         f.write(str(json.dumps(tmd, cls=DjangoJSONEncoder))+"\n")
         f.close()

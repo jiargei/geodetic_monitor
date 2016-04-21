@@ -114,7 +114,7 @@ def meter_task(self, task_id):
         },
     }
 
-    tmp_file = "/tmp/dimosy/elk/log/tachy_%s.log" % tmp_time.strftime("%Y%m%d")
+    tmp_file = "/vagrant/tmp/log/tachy_%s.log" % tmp_time.strftime("%Y%m%d")
     f = open(tmp_file, 'a')
     f.write(str(json.dumps(tmd, cls=DjangoJSONEncoder))+"\n")
     f.close()
