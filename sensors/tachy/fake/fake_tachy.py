@@ -13,6 +13,8 @@ from sensors.tachy import base
 from geodetic.calculations import polar
 from geodetic.point import Point
 
+from django.utils import timezone
+
 from sensors import base as b
 
 from common.utils import generate
@@ -231,7 +233,8 @@ class FakeTachy(Tachy):
             'EASTING': self.__easting,
             'NORTHING': self.__northing,
             'HEIGHT': self.__height,
-            'INSTRUMENT_HEIGHT': self.__instrument_height
+            'INSTRUMENT_HEIGHT': self.__instrument_height,
+            'description': 'OK',
         }
 
     def set_compensator_cross(self, value):
@@ -284,7 +287,8 @@ class FakeTachy(Tachy):
             "PPM_CORR": random.random()*1e-4,
             "REFLECTOR_HEIGHT": 0.0,
             "PRISM_CORR": self.__prism_constant,
-            "CREATED": generate.generate_datestring()
+            "CREATED": timezone.localtime(timezone.now()),
+            "description": "OK",
         }
         d.update(self.get_compensator())
         d.update(b.create_date())

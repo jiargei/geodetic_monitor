@@ -13,6 +13,7 @@ import os
 # convert = imp.load_source("convert", convert_path)
 
 from sensors.base import Sensor
+from sensors.base import Measurement
 from geodetic.calculations import convert
 from geodetic.calculations.polar import grid_to_polar
 from geodetic.point import Point
@@ -488,3 +489,41 @@ class Tachy(Sensor):
     #
     #     :return:
     #     """
+
+
+class CoordinateMeasurement(Measurement):
+    """
+
+    """
+    def __init__(self, easting, northing, height, status, description):
+        """
+
+        :param easting:
+        :param northing:
+        :param height:
+        :param status:
+        :param description:
+        :return:
+        """
+        super(CoordinateMeasurement, self).__init__(status, description)
+        self.easting = easting
+        self.northing = northing
+        self.height = height
+
+
+class CompensatorMeasurement(Measurement):
+    """
+
+    """
+    def __init__(self, compensator_cross, compensator_length, status, description):
+        """
+
+        :param compensator_cross:
+        :param compensator_length:
+        :param status:
+        :param description:
+        :return:
+        """
+        super(CompensatorMeasurement, self).__init__(status, description)
+        self.compensator_cross = compensator_cross
+        self.compensator_length = compensator_length
