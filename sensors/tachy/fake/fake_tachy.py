@@ -119,14 +119,14 @@ class FakeTachy(Tachy):
         self.__horizontal_angle = hz
         self.__vertical_angle = v
 
-    def get_angles(self, use_atr):
+    def get_angles(self, atr):
         """
         Liefert die Aktuellen Stellwinkel zurück
-        :param use_atr:
+        :param atr:
         :return:
         """
-        eps_hz = random.random()*4e-4 if use_atr else random.random()*2e-3
-        eps_v = random.random()*4e-4 if use_atr else random.random()*2e-3
+        eps_hz = random.random()*4e-4 if atr else random.random() * 2e-3
+        eps_v = random.random()*4e-4 if atr else random.random() * 2e-3
 
         return {
             "status": 200,

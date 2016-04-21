@@ -220,13 +220,13 @@ class LeicaTachy(Tachy):
         """
         return self.communicate(geocom.CSV_GetInstrumentNo())
 
-    def get_angles(self, use_atr=True):
+    def get_angles(self, atr=True):
         """
 
-        :param use_atr:
+        :param atr:
         :return:
         """
-        if use_atr:
+        if atr:
             self.communicate(geocom.AUT_FineAdjust(search_hz=self.search_hz,
                                                    search_v=self.search_v))
 

@@ -215,15 +215,15 @@ class TPS1100(LeicaTachy):
         tmp = self.tps.TMC_GetAngle1()
         return {'LENGTH_INCLINE': tmp['LENGTH_INCLINE']}
 
-    def get_angles(self, use_atr):
+    def get_angles(self, atr):
         """
         Liefert die aktuellen Stellwinkel beruecksichtigt dabei, ob ATR verwendet werden soll oder nicht
 
-        :param use_atr: ATR
-        :type use_atr: bool
+        :param atr: ATR
+        :type atr: bool
         :return:
         """
-        if use_atr:
+        if atr:
             self.tps.AUT_FineAdjust()
 
         tmp = self.tps.TMC_GetAngle5()

@@ -122,6 +122,8 @@ def meter_task(self, task_id):
         },
     }
 
+    sensor_class.set_laser_pointer(0)
+
     tmp_file = "/vagrant/tmp/log/tachy_%s.log" % tmp_time.strftime("%Y%m%d")
     f = open(tmp_file, 'a')
     f.write(str(json.dumps(tmd, cls=DjangoJSONEncoder))+"\n")

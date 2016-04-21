@@ -390,11 +390,11 @@ class Tachy(Sensor):
         """
 
     @abstractmethod
-    def get_angles(self, use_atr):
+    def get_angles(self, atr):
         """
         Liefert HZ und V des aktuellen Zieles
-        :param use_atr: Verwende ATR oder nicht
-        :type use_atr: bool
+        :param atr: Verwende ATR oder nicht
+        :type atr: bool
         :return:
         """
 

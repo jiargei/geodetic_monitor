@@ -104,7 +104,7 @@ class GeoCOMCommand(object):
         :return: PARAMETERS
         :rtype: dict
         """
-        parameter_dict = {'status': 409, 'description': 'Conflict - wrong numbers of parameters'}
+        parameter_dict = {'status': 409, 'description': 'Conflict - wrong numbers of parameters' }
         logger.debug(serial_parameters)
         if self.is_valid_parameters_length(serial_parameters):
             for i in range(len(self.GEOCOM_PARAMETERS)):
@@ -242,7 +242,7 @@ class TMC_GetAngle5(GeoCOMCommand):
 
     @property
     def GEOCOM_QUERY(self):
-        return "2003:%d" % self.__inclination_mode
+        return "2107:%d" % self.__inclination_mode
 
     GEOCOM_PARAMETERS = ['HORIZONTAL_ANGLE', 'VERTICAL_ANGLE']
 
