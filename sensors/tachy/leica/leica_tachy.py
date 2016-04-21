@@ -74,7 +74,11 @@ class LeicaTachy(Tachy):
 
         :return:
         """
-        return self.communicate(geocom.TMC_GetCoordinate())
+        d = self.communicate(geocom.TMC_GetCoordinate())
+        d["EASTING"] = float(d["EASTING"])
+        d["NORTHING"] = float(d["NORTHING"])
+        d["HEIGHT"] = float(d["HEIGHT"])
+        return d
 
     def fine_adjust(self):
         """

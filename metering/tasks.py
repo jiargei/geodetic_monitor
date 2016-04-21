@@ -14,6 +14,8 @@ from sensors import tachy
 from geodetic.calculations import polar
 from geodetic.point import Point
 from common.exceptions import NoSensorError
+
+import uuid
 import sensors
 logger = logging.getLogger(__name__)
 
@@ -23,7 +25,7 @@ def meter_task(self, task_id):
     """
 
     :param self:
-    :param task_id:
+    :param task_id: ID from PeriodicTask
     :return:
     """
 
@@ -63,6 +65,7 @@ def meter_task(self, task_id):
                            aim_target=True)
 
     tm = sensor_class.get_measurement()
+    tm["UID"] = str(uuid.uuid1())
     tl = sensor_class.get_compensator()
     tt = sensor_class.get_temperature()
     tc = sensor_class.get_target()

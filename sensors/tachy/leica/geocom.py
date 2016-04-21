@@ -203,7 +203,7 @@ class TMC_GetCoordinate(GeoCOMCommand):
         :return: Calculated Cartesian co-ordinates
         """
         self.__wait_time = wait_time
-        self.__inclincation_mode = inclination_mode
+        self.__inclination_mode = inclination_mode
 
     def set_inclination_mode(self, value):
         if value in [tmc.TMC_MEA_INC, tmc.TMC_AUTO_INC, tmc.TMC_PLANE_INC]:

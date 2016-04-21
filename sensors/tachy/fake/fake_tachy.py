@@ -25,12 +25,14 @@ class FakeTachy(Tachy):
     """
     Produces allways same measurements with:
 
+    Punkt          Epoche     Y  [m]      X  [m]         H  [m]   Code   MS
+    DP01                      5195.093    337187.746    156.225          M34
+    POS1                      5191.591    337195.883    156.168          M34
+
     HZ = 174.1248
     V = 99.5891
     SD = 8.859
-    STATION_EASTING = 5191.591
-    STATION_NORTHING = 337195.883
-    STATION_HEIGHT = 156.168
+
     """
 
     brand = "FaKeBrAnD"
@@ -43,7 +45,7 @@ class FakeTachy(Tachy):
         self.__horizontal_angle = 174.1248 + random.random()*3e-3
         self.__vertical_angle = 99.5891 + random.random()*3e-3
         self.__slope_distance = 8.859 + random.random() * 2e-3
-        self.__connected = True if args[0] == "/dev/null" else False
+        self.__connected = True
         self.__laser_pointer = base.OFF
         self.__face = base.FACE_ONE
         self.__compensator_cross = random.random()*1e-4
