@@ -10,6 +10,8 @@ from serial import STOPBITS_ONE
 # Package Import
 from sensors.tachy.base import Tachy
 from sensors.tachy import base
+from geodetic.calculations import polar
+from geodetic.point import Point
 
 from sensors import base as b
 
@@ -29,9 +31,9 @@ class FakeTachy(Tachy):
     def __init__(self, port, *args, **kwargs):
         super(FakeTachy, self).__init__(*args, **kwargs)
         self.__connected = True if port == "/dev/null" else False
-        self.__horizontal_angle = random.randint(0, 399) + random.random()*1e-1
-        self.__vertical_angle = random.randint(0, 199) + random.random()*1e-1
-        self.__slope_distance = random.randint(1, 540) + random.random()
+        self.__horizontal_angle = 174.1248 + random.random()*3e-3
+        self.__vertical_angle = 99.5891 + random.random()*3e-3
+        self.__slope_distance = 8.859 + random.random() * 2e-3
         self.__laser_pointer = base.OFF
         self.__face = base.FACE_ONE
         self.__compensator_cross = random.random()*1e-4
@@ -41,10 +43,20 @@ class FakeTachy(Tachy):
         self.__instrument_height = 0.0
         self.__instrument_number = "95173"
         self.__instrument_name = "Fake Tachymeter v0.1"
-        self.__easting = random.randint(-3000, 4000) + random.random()*1e2
-        self.__northing = random.randint(336200, 336999) + random.random()*1e2
-        self.__height = random.randint(156, 240) + random.random()*1e1
-        self.__orientation = random.randint(0, 399) + random.random()*1e-1
+        self.__station_easting = 5191.591
+        self.__station_northing = 337195.883
+        self.__station_height = 156.168
+        p = polar.polar_to_grid(p1=Point(self.__station_easting,
+                                         self.__station_northing,
+                                         self.__station_height),
+                                azimut=self.__horizontal_angle,
+                                zenith=self.__vertical_angle,
+                                distance=self.__slope_distance
+                                )
+        self.__easting = p.x
+        self.__northing = p.y
+        self.__height = p.z
+        self.__orientation = 0.0
         self.__temperature = 21.14 + random.random()*1e-1
         self.__path = "/dev/null"
         self.__baudrate = 9600

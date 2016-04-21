@@ -27,7 +27,7 @@ class Point2D(object):
         return self.__repr__()
 
 
-class Point():
+class Point(object):
 
     """Point class with public x, y and z attributes """
  
@@ -35,6 +35,12 @@ class Point():
         self.x = x
         self.y = y
         self.z = z
+
+    def __repr__(self):
+        return "Point [x: %.3f, y: %.3f, z: %.3f]" % (self.x, self.y, self.z)
+
+    def __str__(self):
+        return self.__repr__()
 
     def set_coordinate(self, coordinate):
         """
