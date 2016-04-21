@@ -75,9 +75,8 @@ class LeicaTachy(Tachy):
         :return:
         """
         d = self.communicate(geocom.TMC_GetCoordinate())
-        d["EASTING"] = float(d["EASTING"])
-        d["NORTHING"] = float(d["NORTHING"])
-        d["HEIGHT"] = float(d["HEIGHT"])
+        for key in geocom.TMC_GetCoordinate.GEOCOM_PARAMETERS:
+            d[key] = float(d[key])
         return d
 
     def fine_adjust(self):
@@ -104,7 +103,9 @@ class LeicaTachy(Tachy):
         return self.communicate(geocom.TMC_SetStation(easting, northing, height, instrument_height))
 
     def get_station(self):
-        return self.communicate(geocom.TMC_GetStation())
+        d = self.communicate(geocom.TMC_GetStation())
+        for key in geocom.TMC_GetStation.GEOCOM_PARAMETERS:
+            d[key] = float(d[key])
 
     def set_face(self, value):
         """
@@ -226,7 +227,10 @@ class LeicaTachy(Tachy):
         if use_atr:
             self.communicate(geocom.AUT_FineAdjust(search_hz=self.search_hz,
                                                    search_v=self.search_v))
+
         get_angle = self.communicate(geocom.TMC_GetAngle5())
+        for key in geocom.TMC_GetAngle5.GEOCOM_PARAMETERS:
+            get_angle[key] = float(get_angle[key])
 
         return get_angle
 

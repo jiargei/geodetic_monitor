@@ -69,6 +69,7 @@ class Station(Coordinate):
     port = models.CharField(blank=True, null=True, max_length=32)
     from_date = models.DateTimeField(default=timezone.now, db_index=True)
     to_date = models.DateTimeField(db_index=True)
+    instrument_height = models.DecimalField(default=0., max_digits=10, decimal_places=3)
 
     class Meta:
         ordering = ['-from_date']

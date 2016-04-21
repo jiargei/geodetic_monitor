@@ -181,7 +181,7 @@ class TMC_GetAngle1(GeoCOMCommand):
     def GEOCOM_QUERY(self):
         return "2003:%d" % self.__inclination_mode
 
-    GEOCOM_PARAMETERS = ['HORIZONTAL_ANGLE', 'VERTICAL_ANGLE    def get_brand(cls):',
+    GEOCOM_PARAMETERS = ['HORIZONTAL_ANGLE', 'VERTICAL_ANGLE',
                          'ANGLE_ACCURACY', 'ANGLE_TIME',
                          'CROSS_INCLINE', 'LENGTH_INCLINE',
                          'ACCURACY_INCLINE', 'INCLINE_TIME',
@@ -313,7 +313,10 @@ class TMC_SetStation(GeoCOMCommand):
 
     @property
     def GEOCOM_QUERY(self):
-        return "2010:%f,%f,%f,%f" % (self.__easting, self.__northing, self.__height, self.__instrument_height)
+        return "2010:%s,%s,%s,%s" % (str(self.__easting),
+                                     str(self.__northing),
+                                     str(self.__height),
+                                     str(self.__instrument_height))
 
     GEOCOM_PARAMETERS = ['EMPTY']
 
