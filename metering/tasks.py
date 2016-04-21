@@ -91,7 +91,7 @@ def meter_task(self, task_id):
         "position_id": reference.position.pk,
         "reference_id": reference.pk,
         "station": {
-            "id": reference.position.pk,
+            "id": station.pk,
             "created": station.from_date,
             "easting": station.easting,
             "northing": station.northing,
@@ -110,7 +110,7 @@ def meter_task(self, task_id):
             "height": tc["HEIGHT"],
             "compensator_cross": tl["COMPENSATOR_CROSS"],
             "compensator_length": tl["COMPENSATOR_LENGTH"],
-            "device_temperature": tt,
+            "device_temperature": tt["INTERNAL_TEMPERATURE"],
             "reflector_height": 0.0,  # TODO
            },
         "obtained": {
