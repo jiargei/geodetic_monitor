@@ -110,7 +110,7 @@ def meter_task(self, task_id):
             "height": tc["HEIGHT"],
             "compensator_cross": tl["COMPENSATOR_CROSS"],
             "compensator_length": tl["COMPENSATOR_LENGTH"],
-            "device_temperature": tt["INTERNAL_TEMPERATURE"],
+            "device_temperature": tt["TEMPERATURE"],
             "reflector_height": 0.0,  # TODO
            },
         "obtained": {

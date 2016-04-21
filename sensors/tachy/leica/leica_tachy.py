@@ -188,7 +188,9 @@ class LeicaTachy(Tachy):
 
         :return:
         """
-        return self.communicate(geocom.CSV_GetIntTemp())
+        d = self.communicate(geocom.CSV_GetIntTemp())
+        d["TEMPERATURE"] = float(d["INTERNAL_TEMPERATURE"])
+        return d
 
     def switch_off(self):
         """
