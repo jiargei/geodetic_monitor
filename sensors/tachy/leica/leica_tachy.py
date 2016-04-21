@@ -269,8 +269,8 @@ class LeicaTachy(Tachy):
         :return:
         """
         get_angle = self.communicate(geocom.TMC_GetAngle1())
-        return {"COMPENSATOR_CROSS": angle.rad2gon(get_angle["CROSS_INCLINE"]),
-                "COMPENSATOR_LENGTH": angle.rad2gon(get_angle["LENGTH_INCLINE"]),
+        return {"COMPENSATOR_CROSS": angle.rad2gon(float(get_angle["CROSS_INCLINE"])),
+                "COMPENSATOR_LENGTH": angle.rad2gon(float(get_angle["LENGTH_INCLINE"])),
                 "status": get_angle["status"],
                 "description": get_angle["description"]}
 

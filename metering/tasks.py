@@ -41,10 +41,10 @@ def meter_task(self, task_id):
     station = reference.position.stations.latest()
     station_p = Point()
     station_p.set_coordinate(station.get_point())
-    logger.info("Station: ", station_p)
+    logger.info("Station: %s" % station_p)
     target_p = Point()
     target_p.set_coordinate(reference.target.get_point())
-    logger.info("Target: ", target_p)
+    logger.info("Target: %s" % target_p)
 
     folding_square = polar.grid_to_polar(station_p, target_p)
 
