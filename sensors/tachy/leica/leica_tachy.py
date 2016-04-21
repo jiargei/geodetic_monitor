@@ -142,6 +142,7 @@ class LeicaTachy(Tachy):
             atr_mode = aut.AUT_TARGET
         else:
             atr_mode = aut.AUT_POSITION
+
         return self.communicate(geocom.AUT_MakePositioning(horizontal_angle=angle.gon2rad(hz),
                                                            vertical_angle=angle.gon2rad(v),
                                                            atr_mode=atr_mode))
