@@ -22,18 +22,28 @@ from common.utils import generate
 
 
 class FakeTachy(Tachy):
+    """
+    Produces allways same measurements with:
+
+    HZ = 174.1248
+    V = 99.5891
+    SD = 8.859
+    STATION_EASTING = 5191.591
+    STATION_NORTHING = 337195.883
+    STATION_HEIGHT = 156.168
+    """
 
     brand = "FaKeBrAnD"
     model = "FaKeMoDeL"
     model_type = "Fake"
     sensor_type = "Fake"
 
-    def __init__(self, port, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(FakeTachy, self).__init__(*args, **kwargs)
-        self.__connected = True if port == "/dev/null" else False
         self.__horizontal_angle = 174.1248 + random.random()*3e-3
         self.__vertical_angle = 99.5891 + random.random()*3e-3
         self.__slope_distance = 8.859 + random.random() * 2e-3
+        self.__connected = True if args[0] == "/dev/null" else False
         self.__laser_pointer = base.OFF
         self.__face = base.FACE_ONE
         self.__compensator_cross = random.random()*1e-4

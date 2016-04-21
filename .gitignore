@@ -89,3 +89,6 @@ ENV/
 
 # Vagrant Image
 .vagrant
+
+# Temp Folder
+tmp

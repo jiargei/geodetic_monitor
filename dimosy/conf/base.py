@@ -152,7 +152,8 @@ ROLLBAR = {
 SENSORS = (
     'sensors.tachy.fake.fake_tachy.FakeTachy',
     'sensors.tachy.leica.leica_tachy_tps1100.TPS1100',
-    'sensors.tachy.leica.leica_tachy_ts15.TS15'
+    'sensors.tachy.leica.leica_tachy_ts15.TS15',
+    'sensors.tachy.leica.leica_tachy_tm30.TM30',
 )
 BOX_ID = None
 

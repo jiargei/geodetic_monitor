@@ -22,14 +22,13 @@ class LeicaTachy(Tachy):
     def model_type(self):
         return "GeoCOM"
 
-    def __init__(self, rs232, **kwargs):
+    def __init__(self, *args, **kwargs):
         """
 
-        :param rs232: serial.Serial
+        :param connector: serial.Serial
         :return:
         """
-        self.rs232 = rs232
-        super(LeicaTachy, self).__init__(**kwargs)
+        super(LeicaTachy, self).__init__(*args, **kwargs)
 
     def is_leveled(self):
         """
@@ -55,8 +54,8 @@ class LeicaTachy(Tachy):
         """
         logger.debug("Write %s, %s" % (geocom_command.__class__, str(geocom_command)))
         logger.debug(geocom_command.GEOCOM_PARAMETERS)
-        self.rs232.write(str(geocom_command))
-        geocom_command.set_serial_read(self.rs232.readline())
+        self.connector.write(str(geocom_command))
+        geocom_command.set_serial_read(self.connector.readline())
         logger.debug("Got this: %s" % geocom_command.get_serial_read())
 
         return geocom_command.execute()
@@ -250,8 +249,8 @@ class LeicaTachy(Tachy):
 
         :return:
         """
-        if not self.rs232.isOpen():
-            self.rs232.open()
+        if not self.connector.isOpen():
+            self.connector.open()
 
     def get_compensator(self):
         """

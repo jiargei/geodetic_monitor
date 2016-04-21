@@ -7,6 +7,14 @@ class Sensor(object):
 
     __metaclass__ = ABCMeta
 
+    def __init__(self, connector):
+        """
+
+        :param connector:
+        :return:
+        """
+        self.connector = connector
+
     @classmethod
     def get_name(cls):
         return "%s %s" % (cls.brand, cls.model)

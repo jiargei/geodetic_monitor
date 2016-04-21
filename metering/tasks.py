@@ -13,6 +13,8 @@ import apps
 from sensors import tachy
 from geodetic.calculations import polar
 from geodetic.point import Point
+from common.exceptions import NoSensorError
+import sensors
 logger = logging.getLogger(__name__)
 
 
@@ -50,9 +52,11 @@ def meter_task(self, task_id):
     logger.info("Sensor on port %s" % station.port)
 
     if sensor_class.__name__ == "FakeTachy":
-        sensor_class = sensor_class(port=station.port)
+        sensor_class = sensor_class(connector=None)
+    elif sensor_class.brand == "Leica Geosystems":
+        sensor_class = sensor_class(connector=serial.Serial(port=station.port, timeout=5))
     else:
-        sensor_class = sensor_class(serial=serial.Serial(port=station.port, timeout=5))
+        raise NoSensorError
 
     sensor_class.set_polar(horizontal_angle=folding_square["azimut"],
                            vertical_angle=folding_square["zenit"],

@@ -50,11 +50,10 @@ class Tachy(Sensor):
     sensor_type = "TACHY"
 
     def __init__(self, *args, **kwargs):
-        super(Tachy, self).__init__()
+        super(Tachy, self).__init__(*args, **kwargs)
         self.search_hz = kwargs.get("search_hz", 100e-4)
         self.search_v = kwargs.get("search_v", 100e-4)
         self.__laserpointer_state = ON
-
         self.set_laser_pointer(self.__laserpointer_state)
 
     def set_polar(self, horizontal_angle, vertical_angle, aim_target=False):
