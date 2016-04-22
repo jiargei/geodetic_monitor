@@ -16,7 +16,7 @@ class Response(object):
 
     VALUES = []
 
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
         """
 
         :param status:
@@ -56,7 +56,7 @@ class AngleResponse(Response):
 
     VALUES = ["HORIZONTAL_ANGLE", "VERTICAL_ANGLE"]
 
-    def __init__(self, horizontal_angle, vertical_angle, **kwargs):
+    def __init__(self, *args, **kwargs):
         """
 
         :param status:
@@ -65,16 +65,18 @@ class AngleResponse(Response):
         :param vertical_angle:
         :return:
         """
-        super(AngleResponse, self).__init__(**kwargs)
-        self.horizontal_angle = float(kwargs.get("horizontal_angle"))
-        self.vertical_angle = float(kwargs.get("vertical_angle"))
+        super(AngleResponse, self).__init__(*args, **kwargs)
+        hz = kwargs.get("horizontal_angle")
+        v = kwargs.get("vertical_angle")
+        self.horizontal_angle = float(format(hz, '.5f'))
+        self.vertical_angle = float(format(v, '.5f'))
 
 
 class DistanceResponse(Response):
     """
 
     """
-    def __init__(self, slope_distance, **kwargs):
+    def __init__(self, slope_distance, *args, **kwargs):
         """
 
         :param slope_distance:
@@ -82,15 +84,15 @@ class DistanceResponse(Response):
         :param description:
         :return:
         """
-        super(DistanceResponse, self).__init__(**kwargs)
-        self.slope_distance = float(slope_distance)
+        super(DistanceResponse, self).__init__(*args, **kwargs)
+        self.slope_distance = float(format(slope_distance, '.3f'))
 
 
 class TemperatureResponse(Response):
     """
 
     """
-    def __init__(self, temperature, **kwargs):
+    def __init__(self, *args, **kwargs):
         """
 
         :param temperature:
@@ -98,15 +100,16 @@ class TemperatureResponse(Response):
         :param description:
         :return:
         """
-        super(TemperatureResponse, self).__init__(**kwargs)
-        self.temperature = float(temperature)
+        super(TemperatureResponse, self).__init__(*args, **kwargs)
+        t = kwargs.get("temperature")
+        self.temperature = float(format(t, '.1f'))
 
 
 class StringResponse(Response):
     """
 
     """
-    def __init__(self, string, **kwargs):
+    def __init__(self, *args, **kwargs):
         """
 
         :param string:
@@ -114,33 +117,35 @@ class StringResponse(Response):
         :param description:
         :return:
         """
-        super(StringResponse, self).__init__(**kwargs)
-        self.string = str(string)
+        super(StringResponse, self).__init__(*args, **kwargs)
+        s = kwargs.get("string")
+        self.string = str(s)
 
 
 class StateResponse(Response):
     """
 
     """
-    def __init__(self, state, **kwargs):
-        super(StateResponse, self).__init__(**kwargs)
-        self.state = state
+    def __init__(self, *args, **kwargs):
+        super(StateResponse, self).__init__(*args, **kwargs)
+        self.state = kwargs.get("state")
 
 
 class FloatResponse(Response):
     """
 
     """
-    def __init__(self, value, **kwargs):
-        super(FloatResponse, self).__init__(**kwargs)
-        self.value = float(value)
+    def __init__(self, *args, **kwargs):
+        super(FloatResponse, self).__init__(*args, **kwargs)
+        v = kwargs.get("value")
+        self.value = float(format(v, '.4f'))
 
 
 class CoordinateResponse(Response):
     """
 
     """
-    def __init__(self, easting, northing, height, **kwargs):
+    def __init__(self, *args, **kwargs):
         """
 
         :param easting:
@@ -150,17 +155,20 @@ class CoordinateResponse(Response):
         :param description:
         :return:
         """
-        super(CoordinateResponse, self).__init__(**kwargs)
-        self.easting = float(easting)
-        self.northing = float(northing)
-        self.height = float(height)
+        super(CoordinateResponse, self).__init__(*args, **kwargs)
+        e = kwargs.get("easting")
+        n = kwargs.get("northing")
+        h = kwargs.get("height")
+        self.easting = float(format(e, '.4f'))
+        self.northing = float(format(n, '.4f'))
+        self.height = float(format(h, '.4f'))
 
 
 class CompensatorResponse(Response):
     """
 
     """
-    def __init__(self, compensator_cross, compensator_length, **kwargs):
+    def __init__(self, *args, **kwargs):
         """
 
         :param compensator_cross:
@@ -169,26 +177,29 @@ class CompensatorResponse(Response):
         :param description:
         :return:
         """
-        super(CompensatorResponse, self).__init__(**kwargs)
-        self.compensator_cross = float(compensator_cross)
-        self.compensator_length = float(compensator_length)
+        super(CompensatorResponse, self).__init__(*args, **kwargs)
+        cc = kwargs.get("compensator_cross")
+        cl = kwargs.get("compensator_length")
+        self.compensator_cross = float(format(cc, '.5f'))
+        self.compensator_length = float(format(cl, '.5f'))
 
 
 class StationResponse(CoordinateResponse):
     """
 
     """
-    def __init__(self, instrument_height=0., **kwargs):
-        super(StationResponse, self).__init__(**kwargs)
-        self.instrument_height = float(instrument_height)
+    def __init__(self, *args, **kwargs):
+        super(StationResponse, self).__init__(*args, **kwargs)
+        ih = kwargs.get("instrument_height", 0.0)
+        self.instrument_height = float(format(ih, '.3f'))
 
 
-class TachyMeasurementResponse(AngleResponse, DistanceResponse, TemperatureResponse, CompensatorResponse):
+class TachyMeasurementResponse(AngleResponse, DistanceResponse, TemperatureResponse):
     """
 
     """
-    def __init__(self, **kwargs):
-        super(TachyMeasurementResponse).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(TachyMeasurementResponse, self).__init__(*args, **kwargs)
         self.reflector_height = float(kwargs.get("reflector_height", 0.0))
         self.face = int(kwargs.get("face", FACE_ONE))
         self.ppm = float(kwargs.get("ppm"))

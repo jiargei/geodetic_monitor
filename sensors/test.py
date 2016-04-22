@@ -50,35 +50,34 @@ class TachySensorTestCase(SensorTestCase):
     def test_get_sensor_type(self):
         logger.debug("Testing sensor type 'TACHY'")
         r = self.sensor.get_sensor_type()
-        self.assertEqual(r["SENSOR_TYPE"], "TACHY",
+        self.assertEqual(r.string, "TACHY",
                          msg="Sensor should be a TACHY, got %s instead" % self.sensor.sensor_type)
 
     def test_change_face(self):
         logger.debug("Change tachy face")
         self.sensor.set_face(FACE_TWO)
-        current_face = int(self.sensor.get_face()["FACE"])
+        current_face = int(self.sensor.get_face().state)
         # logger.info("FACE %d: " % current_face)
         self.assertEqual(int(FACE_TWO), current_face)
         logger.debug("Wait a few seconds")
         time.sleep(4)
         self.sensor.set_face(FACE_ONE)
-        current_face = int(self.sensor.get_face()["FACE"])
+        current_face = int(self.sensor.get_face().state)
         self.assertEqual(int(FACE_ONE), current_face)
 
     def test_brand(self):
         logger.debug("Testing brand '%s'" % self.sensor.brand)
         r = self.sensor.get_brand()
-        self.assertEqual(r["BRAND"], self.sensor.brand,
+        self.assertEqual(r.string, self.sensor.brand,
                          msg="Sensor should be from Leica Geosystems, got %s instead" % self.sensor.brand)
 
     def test_get_angles(self):
         angles = self.sensor.get_angles(atr=False)
-        self.assertTrue("HORIZONTAL_ANGLE" in angles)
-        self.assertTrue("VERTICAL_ANGLE" in angles)
+        self.assertTrue(angles.status == RESPONSE_SUCCESS)
 
-    def test_get_measurement(self):
-        r = self.sensor.get_measurement()
-        self.assertTrue("SLOPE_DISTANCE" in r)
+    def test_get_angles(self):
+        r = self.sensor.get_angles(atr=False)
+        self.assertEqual(r.status, RESPONSE_SUCCESS)
 
     def tearDown(self):
         self.sensor.set_laser_pointer(OFF)

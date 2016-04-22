@@ -2,6 +2,8 @@ from abc import abstractproperty, ABCMeta, abstractmethod
 from uuid import uuid1
 from datetime import datetime
 
+import response
+
 
 class Sensor(object):
 
@@ -37,15 +39,15 @@ class Sensor(object):
 
     @classmethod
     def get_sensor_type(cls):
-        return {"SENSOR_TYPE": cls.sensor_type}
+        return response.StringResponse(string=cls.sensor_type)
 
     @classmethod
     def get_model_type(cls):
-        return {"MODEL_TYPE": cls.model_type}
+        return response.StringResponse(string=cls.model_type)
 
     @classmethod
     def get_brand(cls):
-        return {"BRAND": cls.brand}
+        return response.StringResponse(string=cls.brand)
 
     @abstractmethod
     def get_measurement(self):

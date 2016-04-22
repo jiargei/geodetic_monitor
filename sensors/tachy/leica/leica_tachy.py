@@ -40,7 +40,7 @@ class LeicaTachy(Tachy):
         :return:
         """
         # TODO ..
-        return response.StateResponse(1)
+        return response.StateResponse(state=1)
 
     def clear(self):
         """
@@ -129,7 +129,7 @@ class LeicaTachy(Tachy):
         :return:
         """
         assert value in [1, 0]
-        current_face = self.get_face()["FACE"]
+        current_face = self.get_face().state
         current_face = int(current_face)
         logger.debug("FACE: %d" % current_face)
         cmd = {"status": response.RESPONSE_SUCCESS, "description": response.RESPONSE_DESCRIPTION}
@@ -278,8 +278,8 @@ class LeicaTachy(Tachy):
             "COMPENSATOR_CROSS": angle.rad2gon(float(get_angle["CROSS_INCLINE"])),
             "COMPENSATOR_LENGTH": angle.rad2gon(float(get_angle["LENGTH_INCLINE"])),
         }
-        return response.CompensatorResponse(d["COMPENSATOR_CROSS"],
-                                            d["COMPENSATOR_LENGTH"],
+        return response.CompensatorResponse(compensator_cross=d["COMPENSATOR_CROSS"],
+                                            compensator_length=d["COMPENSATOR_LENGTH"],
                                             data_dict=get_angle)
 
     def set_laser_pointer(self, value):

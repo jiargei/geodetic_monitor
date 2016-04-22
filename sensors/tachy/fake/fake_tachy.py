@@ -105,7 +105,8 @@ class FakeTachy(Tachy):
         return Response(description="Aiming at target")
 
     def get_compensator(self):
-        m = CompensatorResponse(self.__compensator_cross, self.__compensator_length)
+        m = CompensatorResponse(compensator_cross=self.__compensator_cross,
+                                compensator_length=self.__compensator_length)
         return m
 
     def set_angles(self, hz, v, atr):
@@ -128,8 +129,8 @@ class FakeTachy(Tachy):
         """
         eps_hz = random.random()*4e-4 if atr else random.random() * 2e-3
         eps_v = random.random()*4e-4 if atr else random.random() * 2e-3
-        return AngleResponse(self.__horizontal_angle + eps_hz,
-                             self.__vertical_angle + eps_v)
+        return AngleResponse(horizontal_angle=self.__horizontal_angle+eps_hz,
+                             vertical_angle=self.__vertical_angle+eps_v)
 
     def set_search_windows(self, search_horizontal, search_vertical):
         self.__hz_tolerance = search_horizontal
@@ -137,10 +138,23 @@ class FakeTachy(Tachy):
         return Response()
 
     def get_search_windows(self):
-        return AngleResponse(self.__hz_tolerance, self.__v_tolerance)
+        return AngleResponse(horizontal_angle=self.__hz_tolerance,
+                             vertical_angle=self.__v_tolerance)
 
     def get_target(self):
-        return CoordinateResponse(self.__easting, self.__northing, self.__height)
+        station = self.get_station()
+        st = Point(station.easting,
+                   station.northing,
+                   station.height)
+        angles = self.get_angles(atr=True)
+        ta = polar.polar_to_grid(p1=st,
+                                 distance=self.get_slope_distance().slope_distance,
+                                 azimut=angles.horizontal_angle,
+                                 zenith=angles.vertical_angle)
+
+        return CoordinateResponse(easting=ta.x,
+                                  northing=ta.y,
+                                  height=ta.z)
 
     def switch_off(self):
         """
@@ -160,7 +174,7 @@ class FakeTachy(Tachy):
         return Response(description="connected: %s" % self.__connected)
 
     def get_temperature(self):
-        return TemperatureResponse(self.__temperature)
+        return TemperatureResponse(temperature=self.__temperature)
 
     def set_instrument_modes(self, atr_mode, edm_mode, hz_tolerance, v_tolerance):
         """
@@ -189,25 +203,25 @@ class FakeTachy(Tachy):
         :return:
         """
         self.__laser_pointer = value
-        return StateResponse(self.__laser_pointer)
+        return StateResponse(state=self.__laser_pointer)
 
     def get_laser_pointer(self):
-        return StateResponse(self.__laser_pointer)
+        return StateResponse(state=self.__laser_pointer)
 
     def get_face(self):
-        return StateResponse(self.__face)
+        return StateResponse(state=self.__face)
 
     def get_prism_constant(self):
-        return FloatResponse(self.__prism_constant)
+        return FloatResponse(value=self.__prism_constant)
 
     def get_reflector_height(self):
-        return FloatResponse(self.__reflector_height)
+        return FloatResponse(value=self.__reflector_height)
 
     def get_instrument_number(self):
-        return StringResponse(self.__instrument_number)
+        return StringResponse(string=self.__instrument_number)
 
     def get_instrument_name(self):
-        return StringResponse(self.__instrument_name)
+        return StringResponse(string=self.__instrument_name)
 
     def get_station(self):
         return StationResponse(easting=self.__easting,
@@ -251,41 +265,20 @@ class FakeTachy(Tachy):
 
         :return:
         """
-        return StateResponse(1)
+        return StateResponse(state=1)
 
     def clear(self):
         """
         Bereinige Speicher, Cache, etc.
         :return:
         """
-        return StateResponse(1)
+        return StateResponse(state=1)
 
     def get_slope_distance(self):
-        return DistanceResponse(self.__slope_distance + random.random()*1e-3)
+        return DistanceResponse(slope_distance=self.__slope_distance + random.random()*1e-3)
 
     def get_ppm(self):
-        return FloatResponse(random.random()*1e-4)
-
-    def get_measurement(self):
-        m1 = self.get_angles(atr=True)
-        m2 = self.get_temperature()
-        m3 = self.get_face()
-        m4 = self.get_reflector_height()
-        m5 = self.get_slope_distance()
-        m6 = self.get_ppm()
-        m7 = self.get_prism_constant()
-        m = TachyMeasurementResponse(horizontal_angle=m1.horizontal_angle,
-                                     vertical_angle=m1.vertical_angle,
-                                     slope_distance=m5.slope_distance,
-                                     temperature=m2.temperature,
-                                     face=m3.state,
-                                     uuid=m1.uuid,
-                                     ppm=m6.value,
-                                     reflector_height=m4.value,
-                                     prism_constant=m7.value,
-                                     created=m7.created
-                                     )
-        return m
+        return FloatResponse(value=random.random()*1e-4)
 
     def is_leveled(self):
-        return StateResponse(1)
+        return StateResponse(state=1)

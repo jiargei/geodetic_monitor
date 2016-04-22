@@ -42,6 +42,9 @@ class Tachy(Sensor):
         self.__laserpointer_state = ON
         self.set_laser_pointer(self.__laserpointer_state)
 
+    def __del__(self):
+        self.set_laser_pointer(OFF)
+
     def set_polar(self, horizontal_angle, vertical_angle, aim_target=False):
         """
 
