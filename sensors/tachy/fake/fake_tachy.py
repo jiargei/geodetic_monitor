@@ -9,6 +9,9 @@ from serial import STOPBITS_ONE
 
 # Package Import
 from sensors.tachy.base import Tachy
+from sensors.response import Response, TemperatureResponse, StringResponse, StateResponse, FloatResponse
+from sensors.response import CompensatorResponse, CoordinateResponse, AngleResponse, StationResponse
+from sensors.response import TachyMeasurementResponse, DistanceResponse
 from sensors.tachy import base
 from geodetic.calculations import polar
 from geodetic.point import Point
@@ -82,7 +85,7 @@ class FakeTachy(Tachy):
         self.__atr_mode = 1
         self.__hz_tolerance = 0.0030
         self.__v_tolerance = 0.0030
-        self.__level = True
+        self.__level = 1
 
     def set_instrument_name(self, value):
         """
@@ -101,14 +104,11 @@ class FakeTachy(Tachy):
         pass
 
     def fine_adjust(self):
-        return {"status": 200, "description": "Aiming at target"}
+        return Response(description="Aiming at target")
 
     def get_compensator(self):
-        d = {
-            "COMPENSATOR_CROSS": self.__compensator_cross,
-            "COMPENSATOR_LENGTH": self.__compensator_length
-        }
-        return d
+        m = CompensatorResponse(self.__compensator_cross, self.__compensator_length)
+        return m
 
     def set_angles(self, hz, v, atr):
         """
@@ -120,6 +120,7 @@ class FakeTachy(Tachy):
         """
         self.__horizontal_angle = hz
         self.__vertical_angle = v
+        return Response()
 
     def get_angles(self, atr):
         """
@@ -129,58 +130,39 @@ class FakeTachy(Tachy):
         """
         eps_hz = random.random()*4e-4 if atr else random.random() * 2e-3
         eps_v = random.random()*4e-4 if atr else random.random() * 2e-3
-
-        return {
-            "status": 200,
-            "HORIZONTAL_ANGLE": self.__horizontal_angle + eps_hz,
-            "VERTICAL_ANGLE": self.__vertical_angle + eps_v
-        }
+        return AngleResponse(self.__horizontal_angle + eps_hz,
+                             self.__vertical_angle + eps_v)
 
     def set_search_windows(self, search_horizontal, search_vertical):
         self.__hz_tolerance = search_horizontal
         self.__v_tolerance = search_vertical
+        return Response()
 
     def get_search_windows(self):
-        return {
-            "status": 200,
-            "SEARCH_VERTICAL": self.__hz_tolerance,
-            "SEARCH_HORIZONTAL": self.__v_tolerance,
-        }
+        return AngleResponse(self.__hz_tolerance, self.__v_tolerance)
 
     def get_target(self):
-        d = {
-            "status": 200,
-            "EASTING": self.__easting,
-            "NORTHING": self.__northing,
-            "HEIGHT": self.__height
-        }
-        return d
+        return CoordinateResponse(self.__easting, self.__northing, self.__height)
 
     def switch_off(self):
         """
 
         :return:
         """
-        return {"status": 200, "description": "Switch OFF"}
+        return Response(description="Switch OFF")
 
     def switch_on(self):
         """
 
         :return:
         """
-        return {"status": 200, "description": "Switch ON"}
+        return Response(description="Switch ON")
 
     def get_response(self):
-        return {
-            "status": 200,
-            "description": "connected: %s" % self.__connected
-        }
+        return Response(description="connected: %s" % self.__connected)
 
     def get_temperature(self):
-        return {
-            "status": 200,
-            "TEMPERATURE": self.__temperature
-        }
+        return TemperatureResponse(self.__temperature)
 
     def set_instrument_modes(self, atr_mode, edm_mode, hz_tolerance, v_tolerance):
         """
@@ -199,6 +181,7 @@ class FakeTachy(Tachy):
         self.__edm_mode = edm_mode
         self.__hz_tolerance = hz_tolerance
         self.__v_tolerance = v_tolerance
+        return Response()
 
     def set_laser_pointer(self, value):
         """
@@ -208,95 +191,103 @@ class FakeTachy(Tachy):
         :return:
         """
         self.__laser_pointer = value
+        return StateResponse(self.__laser_pointer)
 
     def get_laser_pointer(self):
-        return {"status": 200, "LASERPOINTER": self.__laser_pointer}
+        return StateResponse(self.__laser_pointer)
 
     def get_face(self):
-        return {"status": 200, "FACE": self.__face}
+        return StateResponse(self.__face)
 
     def get_prism_constant(self):
-        return {"status": 200, "PRISM_CONSTANT": self.__prism_constant}
+        return FloatResponse(self.__prism_constant)
 
     def get_reflector_height(self):
-        return {"status": 200, "REFLECTOR_HEIGHT": self.__reflector_height}
+        return FloatResponse(self.__reflector_height)
 
     def get_instrument_number(self):
-        return {"status": 200, "INSTRUMENT_NUMBER": self.__instrument_number}
+        return StringResponse(self.__instrument_number)
 
     def get_instrument_name(self):
-        return {"status": 200, "INSTRUMENT_NAME": self.__instrument_name}
+        return StringResponse(self.__instrument_name)
 
     def get_station(self):
-        return {
-            "status": 200,
-            'EASTING': self.__easting,
-            'NORTHING': self.__northing,
-            'HEIGHT': self.__height,
-            'INSTRUMENT_HEIGHT': self.__instrument_height,
-            'description': 'OK',
-        }
+        return StationResponse(easting=self.__easting,
+                               northing=self.__northing,
+                               height=self.__height,
+                               instrument_height=self.__instrument_height)
 
     def set_compensator_cross(self, value):
         self.__compensator_cross = value
+        return Response()
 
     def set_compensator_length(self, value):
         self.__compensator_length = value
+        return Response()
 
     def set_face(self, value):
         self.__face = value
+        return Response()
 
     def set_orientation(self, value):
         self.__orientation = value
+        return Response()
 
     def set_prism_constant(self, value):
         self.__prism_constant = value
+        return Response()
 
     def set_reflector_height(self, value):
         self.__reflector_height = value
+        return Response()
 
     def set_station(self, easting, northing, height, instrument_height):
         self.__easting = easting
         self.__northing = northing
         self.__height = height
         self.__instrument_height = instrument_height
+        return Response()
 
     def connect(self):
         """
 
         :return:
         """
-        return {"status": 200, "SUCCESS": self.__connected}
+        return StateResponse(1)
 
     def clear(self):
         """
         Bereinige Speicher, Cache, etc.
         :return:
         """
-        return {"status": 200, "SUCCESS": True}
+        return StateResponse(1)
+
+    def get_slope_distance(self):
+        return DistanceResponse(self.__slope_distance + random.random()*1e-3)
+
+    def get_ppm(self):
+        return FloatResponse(random.random()*1e-4)
 
     def get_measurement(self):
-        d = {
-            "status": 200,
-            "HORIZONTAL_ANGLE": self.__horizontal_angle + random.random()*1e-4,
-            "VERTICAL_ANGLE": self.__vertical_angle + random.random()*1e-4,
-            "SLOPE_DISTANCE": self.__slope_distance + random.random()*1e-3,
-            "TEMPERATURE": self.get_temperature()["TEMPERATURE"],
-            "FACE": self.get_face()["FACE"],
-            "UID": generate.generate_id(),
-            "PPM_CORR": random.random()*1e-4,
-            "REFLECTOR_HEIGHT": 0.0,
-            "PRISM_CORR": self.__prism_constant,
-            "CREATED": timezone.localtime(timezone.now()),
-            "description": "OK",
-        }
-        d.update(self.get_compensator())
-        d.update(b.create_date())
-        d.update(b.create_uid())
-        return d
+        m1 = self.get_angles(atr=True)
+        m2 = self.get_temperature()
+        m3 = self.get_face()
+        m4 = self.get_reflector_height()
+        m5 = self.get_slope_distance()
+        m6 = self.get_ppm()
+        m7 = self.get_prism_constant()
+        m = TachyMeasurementResponse(horizontal_angle=m1.horizontal_angle,
+                                     vertical_angle=m1.vertical_angle,
+                                     slope_distance=m5.slope_distance,
+                                     temperature=m2.temperature,
+                                     face=m3.state,
+                                     uuid=m1.uuid,
+                                     ppm=m6.value,
+                                     reflector_height=m4.value,
+                                     prism_constant=m7.value,
+                                     created=m7.created
+                                     )
+        return m
 
     def is_leveled(self):
-        return {
-            "status": 200,
-            "description": "Leveled: %s" % self.__level
-        }
+        return StateResponse(1)

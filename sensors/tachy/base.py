@@ -13,7 +13,7 @@ import os
 # convert = imp.load_source("convert", convert_path)
 
 from sensors.base import Sensor
-from sensors.base import Measurement
+from sensors import response
 from geodetic.calculations import convert
 from geodetic.calculations.polar import grid_to_polar
 from geodetic.point import Point
@@ -65,7 +65,8 @@ class Tachy(Sensor):
         :param aim_target:
         :return:
         """
-        self.set_angles(horizontal_angle, vertical_angle, aim_target)
+        return self.set_angles(horizontal_angle, vertical_angle, aim_target)
+
 
     @abstractmethod
     def set_search_windows(self, search_horizontal, search_vertical):
@@ -193,6 +194,7 @@ class Tachy(Sensor):
         """
         Get Compensator Length
         :return:
+        :rtype: CompensatorResponse
         """
 
     def get_laser_pointer(self):
@@ -200,7 +202,7 @@ class Tachy(Sensor):
 
         :return:
         """
-        return {"LASERPOINTER_STATE": self.__laserpointer_state}
+        return response.StateResponse(self.__laserpointer_state)
 
     @abstractmethod
     def set_laser_pointer(self, value):
@@ -249,7 +251,7 @@ class Tachy(Sensor):
         Drehe Tachymeter zu Messung
 
         :param measurement:
-        :type measurement: dimosy.TACHY.MEASUREMENT.Measurement
+        :type measurement: dimosy.TACHY.MEASUREMENT.Response
         :param face: In which face shall be measured
         :type face: int
         :return:
@@ -273,6 +275,7 @@ class Tachy(Sensor):
                           vertical_angle=reference.VERTICAL_ANGLE,
                           face=face,
                           atr=False)
+        return response.Response()
 
     def turn_to_point(self, p, face):
         """
@@ -294,19 +297,35 @@ class Tachy(Sensor):
                           face=face,
                           atr=False)
 
-    # @abstractmethod
-    # def get_measurement(self):
-    #     """
-    #     Perform Measurement to aimed Target
-    #     :return: HORIZONTAL_ANGLE, VERTICAL_ANGLE, SLOPE_DISTANCE, CREATED, UID
-    #     :rtype: dict
-    #     """
+        return response.Response()
+
+    def get_measurement(self):
+        m1 = self.get_angles(atr=True)
+        m2 = self.get_temperature()
+        m3 = self.get_face()
+        m4 = self.get_reflector_height()
+        m5 = self.get_slope_distance()
+        m6 = self.get_ppm()
+        m7 = self.get_prism_constant()
+        m = response.TachyMeasurementResponse(horizontal_angle=m1.horizontal_angle,
+                                              vertical_angle=m1.vertical_angle,
+                                              slope_distance=m5.slope_distance,
+                                              temperature=m2.temperature,
+                                              face=m3.state,
+                                              uuid=m1.uuid,
+                                              ppm=m6.value,
+                                              reflector_height=m4.value,
+                                              prism_constant=m7.value,
+                                              created=m7.created
+                                              )
+        return m
 
     @abstractmethod
     def get_target(self):
         """
         Get Coordinates for aimed Target
         :return: EASTING, NORTHING, HEIGHT
+        :rtype: CoordinateResponse
         """
 
     @abstractmethod
@@ -335,6 +354,8 @@ class Tachy(Sensor):
         elif self.get_face()["FACE"] == FACE_TWO:
             self.set_face(FACE_ONE)
 
+        return response.Response()
+
     @abstractmethod
     def set_face(self, value):
         """
@@ -342,23 +363,6 @@ class Tachy(Sensor):
         :param value:
         :return:
         """
-
-    # def correct_face(self, face):
-    #     """
-    #     Dreht Gerät in die richtige Lage
-    #
-    #     :param face: Gewünschte Lage
-    #     :type face: int
-    #     :return:
-    #     """
-    #     current_face = self.get_face()["FACE"]
-    #     while not current_face == face:
-    #         # print "Gerät ist in Lage %d, wechsle.." % current_face
-    #         self.change_face()
-    #         current_face = self.get_face()["FACE"]
-    #         time.sleep(0.5)
-
-        # print "Gerät ist in Lage %d" % current_face
 
     @abstractmethod
     def set_station(self, easting, northing, height, instrument_height):
@@ -376,6 +380,7 @@ class Tachy(Sensor):
         """
 
         :return:
+        :rtype: CoordinateResponse
         """
 
     def fine_adjust(self):
@@ -397,22 +402,24 @@ class Tachy(Sensor):
         :param atr: Verwende ATR oder nicht
         :type atr: bool
         :return:
+        :rtype: AngleResponse
         """
 
-    # @abstractmethod
-    # def get_path(self):
-    #     """
-    #
-    #     :return:
-    #     """
-    #
-    # @abstractmethod
-    # def set_path(self, value):
-    #     """
-    #
-    #     :param value:
-    #     :return:
-    #     """
+    @abstractmethod
+    def get_slope_distance(self):
+        """
+
+        :return:
+        :rtype: DistanceResponse
+        """
+
+    @abstractmethod
+    def get_ppm(self):
+        """
+
+        :return:
+        :rtype: FloatResponse
+        """
 
     @abstractmethod
     def connect(self):
@@ -429,101 +436,3 @@ class Tachy(Sensor):
         :return: True, wenn er horizontiert ist, sonst False
         :rtype: bool
         """
-
-    # @abstractmethod
-    # def set_baudrate(self, value):
-    #     """
-    #
-    #     :param value:
-    #     :return:
-    #     """
-    #
-    # @abstractmethod
-    # def get_baudrate(self):
-    #     """
-    #
-    #     :return:
-    #     """
-    #
-    # @abstractmethod
-    # def set_bytesize(self, value):
-    #     """
-    #
-    #     :param value:
-    #     :return:
-    #     """
-    #
-    # @abstractmethod
-    # def get_bytesize(self):
-    #     """
-    #
-    #     :return:
-    #     """
-    #
-    # @abstractmethod
-    # def set_stopbits(self, value):
-    #     """
-    #
-    #     :param value:
-    #     :return:
-    #     """
-    #
-    # @abstractmethod
-    # def get_stopbits(self):
-    #     """
-    #
-    #     :return:
-    #     """
-    #
-    # @abstractmethod
-    # def set_parity(self, value):
-    #     """
-    #
-    #     :param value:
-    #     :return:
-    #     """
-    #
-    # @abstractmethod
-    # def get_parity(self):
-    #     """
-    #
-    #     :return:
-    #     """
-
-
-class CoordinateMeasurement(Measurement):
-    """
-
-    """
-    def __init__(self, easting, northing, height, status, description):
-        """
-
-        :param easting:
-        :param northing:
-        :param height:
-        :param status:
-        :param description:
-        :return:
-        """
-        super(CoordinateMeasurement, self).__init__(status, description)
-        self.easting = easting
-        self.northing = northing
-        self.height = height
-
-
-class CompensatorMeasurement(Measurement):
-    """
-
-    """
-    def __init__(self, compensator_cross, compensator_length, status, description):
-        """
-
-        :param compensator_cross:
-        :param compensator_length:
-        :param status:
-        :param description:
-        :return:
-        """
-        super(CompensatorMeasurement, self).__init__(status, description)
-        self.compensator_cross = compensator_cross
-        self.compensator_length = compensator_length

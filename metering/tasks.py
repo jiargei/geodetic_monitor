@@ -70,7 +70,6 @@ def meter_task(self, task_id):
                            aim_target=True)
 
     tm = sensor_class.get_measurement()
-    tm["UID"] = str(uuid.uuid1())
     tl = sensor_class.get_compensator()
     tt = sensor_class.get_temperature()
     tc = sensor_class.get_target()
@@ -79,8 +78,8 @@ def meter_task(self, task_id):
     #     pass
 
     tmd = {
-        "id": tm["UID"],
-        "created": tmp_time,
+        "id": tm.uuid,
+        "created": tm.created,
         "target": {
             "id": reference.target.pk,
             "easting": reference.target.easting,
@@ -102,22 +101,22 @@ def meter_task(self, task_id):
             "type": "periodic",
         },
         "raw": {
-            "horizontal_angle": tm["HORIZONTAL_ANGLE"],
-            "vertical_angle": tm["VERTICAL_ANGLE"],
-            "slope_distance": tm["SLOPE_DISTANCE"],
-            "easting": tc["EASTING"],
-            "northing": tc["NORTHING"],
-            "height": tc["HEIGHT"],
-            "compensator_cross": tl["COMPENSATOR_CROSS"],
-            "compensator_length": tl["COMPENSATOR_LENGTH"],
-            "device_temperature": tt["TEMPERATURE"],
-            "reflector_height": 0.0,  # TODO
+            "horizontal_angle": tm.horizontal_angle,
+            "vertical_angle": tm.vertical_angle,
+            "slope_distance": tm.slope_distance,
+            "easting": tc.easting,
+            "northing": tc.northing,
+            "height": tc.height,
+            "compensator_cross": tl.compensator_cross,
+            "compensator_length": tl.compensator_length,
+            "device_temperature": tt.temperature,
+            "reflector_height": tm.reflector_height,
            },
         "obtained": {
-            "deasting": tc["EASTING"] - reference.target.easting,
-            "dnorthing": tc["NORTHING"] - reference.target.northing,
-            "dheight": tc["HEIGHT"] - reference.target.height,
-            "slope_distance_reduced": tm["SLOPE_DISTANCE"],  # TODO ..
+            "deasting": tc.easting - reference.target.easting,
+            "dnorthing": tc.northing - reference.target.northing,
+            "dheight": tc.height - reference.target.height,
+            "slope_distance_reduced": tm.slope_distance_reduced,
             "profiles": profiles,
         },
     }

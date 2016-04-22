@@ -1,7 +1,7 @@
-from sensors.base import Measurement
+from sensors.base import Response
 
 
-class TiltMeasurement(Measurement):
+class TiltResponse(Response):
     """
 
     """
@@ -14,6 +14,6 @@ class TiltMeasurement(Measurement):
         :param description:
         :return:
         """
-        super(TiltMeasurement, self).__init__(status, description)
+        super(TiltResponse, self).__init__(status, description)
         self.tilt_x = tilt_x
         self.tilt_y = tilt_y

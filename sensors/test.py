@@ -2,6 +2,7 @@ import unittest
 from abc import ABCMeta, abstractmethod
 import logging
 import time
+from response import RESPONSE_SUCCESS
 
 from tachy.base import FACE_ONE, FACE_TWO, OFF
 
@@ -28,7 +29,7 @@ class SensorTestCase(unittest.TestCase):
     def test_get_response(self):
         logger.debug("Testing sensor NULL response")
         r = self.sensor.get_response()
-        self.assertTrue(r["status"] == 200, msg="Status code is not 200")
+        self.assertTrue(r["status"] == RESPONSE_SUCCESS, msg="Status code is not %d" % RESPONSE_SUCCESS)
 
     @abstractmethod
     def test_get_sensor_name(self):

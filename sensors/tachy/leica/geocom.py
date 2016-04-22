@@ -8,6 +8,7 @@ import bap
 import tmc
 from returncodes import RETURNCODES
 from sensors.tachy.base import ON
+from sensors.response import RESPONSE_DESCRIPTION, RESPONSE_SUCCESS
 
 
 logging.basicConfig(level=logging.INFO)
@@ -109,8 +110,8 @@ class GeoCOMCommand(object):
         if self.is_valid_parameters_length(serial_parameters):
             for i in range(len(self.GEOCOM_PARAMETERS)):
                 parameter_dict.update({self.GEOCOM_PARAMETERS[i]: serial_parameters[i]})
-            parameter_dict['status'] = 200
-            parameter_dict['description'] = 'OK'
+            parameter_dict['status'] = RESPONSE_SUCCESS
+            parameter_dict['description'] = RESPONSE_DESCRIPTION
 
         return parameter_dict
 
@@ -295,6 +296,21 @@ class TMC_GetStation(GeoCOMCommand):
         return "2009:"
 
     GEOCOM_PARAMETERS = ['EASTING', 'NORTHING', 'HEIGHT', 'INSTRUMENT_HEIGHT']
+
+
+class TMC_GetSlopeDistCorr(GeoCOMCommand):
+    """
+    ASCII-Request: %R1Q,2126:\n
+    ASCII-Response: %R1P,0,0: RC,dPpmCorr[double], dPrismCorr[double] \n
+    Remarks: \n
+    This function retrieves the total ppm value (atmospheric+geometric ppm) plus the current prism constant.
+    """
+
+    @property
+    def GEOCOM_QUERY(self):
+        return "2126:"
+
+    GEOCOM_PARAMETERS = ['PPM_CORR', 'PRISM_CONSTANT']
 
 
 class TMC_SetStation(GeoCOMCommand):

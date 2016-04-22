@@ -49,56 +49,12 @@ class Sensor(object):
 
     @abstractmethod
     def get_measurement(self):
+        """
+
+        :return:
+        :rtype: Response
+        """
         pass
-
-
-class Measurement(object):
-
-    __metaclass__ = ABCMeta
-
-    def __init__(self, status=200, description="OK"):
-        """
-
-        :param status:
-        :param description:
-        :return:
-        """
-        self.status = status
-        self.description = description
-
-
-class AngleMeasurement(Measurement):
-    """
-
-    """
-    def __init__(self, horizontal_angle, vertical_angle, status, description):
-        """
-
-        :param status:
-        :param description:
-        :param horizontal_angle:
-        :param vertical_angle:
-        :return:
-        """
-        super(AngleMeasurement, self).__init__(status, description)
-        self.horizontal_angle = horizontal_angle
-        self.vertical_angle = vertical_angle
-
-
-class DistanceMeasurement(Measurement):
-    """
-
-    """
-    def __init__(self, slope_distance, status, description):
-        """
-
-        :param slope_distance:
-        :param status:
-        :param description:
-        :return:
-        """
-        super(DistanceMeasurement, self).__init__(status, description)
-        self.slope_distance = slope_distance
 
 
 def create_uid(k="UID"):
