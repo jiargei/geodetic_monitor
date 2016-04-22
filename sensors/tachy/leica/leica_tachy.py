@@ -4,7 +4,8 @@
 import time
 
 # Package Import
-from ..base import Tachy, ON, OFF
+from ..base import Tachy
+from common.constants import ON, OFF
 import tmc
 import aut
 import geocom

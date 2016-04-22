@@ -1,4 +1,4 @@
-from sensors.tachy.base import FACE_ONE, FACE_TWO
+from common.constants import FACE_ONE
 from uuid import uuid1
 
 from django.utils import timezone

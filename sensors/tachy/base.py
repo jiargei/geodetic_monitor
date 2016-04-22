@@ -17,23 +17,8 @@ from sensors import response
 from geodetic.calculations import convert
 from geodetic.calculations.polar import grid_to_polar
 from geodetic.point import Point
+from common.constants import FACE_ONE, FACE_TWO, OFF, ON
 
-
-# Code
-
-FACE_ONE = 0
-FACE_TWO = 1
-
-ON = 1
-OFF = 0
-
-WAIT_TIME = 5
-
-COMMAND_RETRIES = 3
-COMMAND_WAIT = 5
-
-NULL_PRO_RETRY_ATTEMP = 3
-NULL_PRO_RETRY_TIME = 30
 
 
 @property

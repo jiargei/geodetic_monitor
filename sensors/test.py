@@ -4,7 +4,7 @@ import logging
 import time
 from response import RESPONSE_SUCCESS
 
-from tachy.base import FACE_ONE, FACE_TWO, OFF
+from common.constants import FACE_ONE, FACE_TWO, OFF
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

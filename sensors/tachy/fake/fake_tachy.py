@@ -12,14 +12,12 @@ from sensors.tachy.base import Tachy
 from sensors.response import Response, TemperatureResponse, StringResponse, StateResponse, FloatResponse
 from sensors.response import CompensatorResponse, CoordinateResponse, AngleResponse, StationResponse
 from sensors.response import TachyMeasurementResponse, DistanceResponse
-from sensors.tachy import base
 from geodetic.calculations import polar
 from geodetic.point import Point
+from common.constants import FACE_ONE, FACE_TWO, OFF
 
 from django.utils import timezone
-
 from sensors import base as b
-
 from common.utils import generate
 
 
@@ -51,8 +49,8 @@ class FakeTachy(Tachy):
         self.__vertical_angle = 99.5891 + random.random()*3e-3
         self.__slope_distance = 8.859 + random.random() * 2e-3
         self.__connected = True
-        self.__laser_pointer = base.OFF
-        self.__face = base.FACE_ONE
+        self.__laser_pointer = OFF
+        self.__face = FACE_ONE
         self.__compensator_cross = random.random()*1e-4
         self.__compensator_length = random.random()*1e-4
         self.__prism_constant = 0.0175

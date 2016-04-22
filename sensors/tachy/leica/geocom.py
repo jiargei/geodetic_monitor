@@ -7,7 +7,7 @@ import aut
 import bap
 import tmc
 from returncodes import RETURNCODES
-from sensors.tachy.base import ON
+from common.constants import ON
 from sensors.response import RESPONSE_DESCRIPTION, RESPONSE_SUCCESS
 
 

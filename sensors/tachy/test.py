@@ -4,7 +4,6 @@ import time
 
 from leica.leica_tachy_tps1100 import TPS1100
 from fake.fake_tachy import FakeTachy
-from base import FACE_ONE, FACE_TWO, OFF
 from ..test import TachySensorTestCase
 
 logging.basicConfig(level=logging.INFO)
