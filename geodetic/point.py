@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import math
+import numpy as np
 
 #  ______            _    _   _    _
 #  | ___ \          | |  | | | |  | |
@@ -36,11 +37,20 @@ class Point(object):
         self.y = y
         self.z = z
 
-    def __repr__(self):
-        return "Point [x: %.3f, y: %.3f, z: %.3f]" % (self.x, self.y, self.z)
-
     def __str__(self):
         return self.__repr__()
+
+    def __eq__(self, other):
+        # print "self", self.x, self.y, self.z
+        # print "other", other.x, other.y, other.z
+        if self.x == other.x and self.y == other.y and self.z == other.z:
+            return True
+        return False
+
+    def as_array(self):
+        return np.array([[self.x],
+                         [self.y],
+                         [self.z]])
 
     def set_coordinate(self, coordinate):
         """
@@ -51,7 +61,6 @@ class Point(object):
         self.x = coordinate['x']
         self.y = coordinate['y']
         self.z = coordinate['z']
-
 
     def dist_slope(self, p):
         """return the Euclidian distance between self and p"""
@@ -134,7 +143,7 @@ class Point(object):
         also the str() function. It should produce a string that, when
         evaluated, returns a Point with the
         same data."""
-        return 'Point(x=%12.3f,y=%12.3f,z=%12.3f)' % (self.x, self.y, self.z)
+        return 'Point(x=%12.3f, y=%12.3f, z=%12.3f)' % (self.x, self.y, self.z)
     
     def to_dict(self):
         return {'EASTING': self.x,

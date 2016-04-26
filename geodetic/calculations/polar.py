@@ -9,7 +9,6 @@ from geodetic.point import Point
 logger = logging.getLogger(__name__)
 
 
-
 def polar_to_grid(p1, azimut, zenith, distance):
     """
     1. Hauptaufgabe der Geodäsie... wandelt Richtungen und Strecken in Koordinaten um

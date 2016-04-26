@@ -2,6 +2,7 @@ import logging
 
 from dimosy.celery import app
 import serial
+import math
 import json
 
 from django.utils import timezone
@@ -13,6 +14,7 @@ import apps
 from sensors import tachy
 from geodetic.calculations import polar
 from geodetic.point import Point
+from geodetic.calculations.transformation import Helmert2DTransformation
 from common.exceptions import NoSensorError
 
 import uuid
@@ -73,7 +75,50 @@ def meter_task(self, task_id):
     tl = sensor_class.get_compensator()
     tt = sensor_class.get_temperature()
     tc = sensor_class.get_target()
+
     profiles = []
+    for p in reference.target.profiles:
+        h2d = Helmert2DTransformation()
+        h2d.add_ident_pair(Point(p.p1_easting, p.p1_northing), Point(0., 0.))
+        d0 = math.sqrt((p.p1_easting-p.p2_easting) ** 2 + (p.p1_northing-p.p2_northing))
+        h2d.add_ident_pair(Point(p.p2_easting, p.p2_northing), Point(d0, 0.))
+        h2d.calculate()
+        pp = h2d.transform([Point(reference.target.easting, reference.target.northing),
+                            Point(tc.easting, tc.northing)])
+        pi = {
+            "profile": {
+                "name": p.name,
+                "system": {
+                    "startpoint": {
+                        "easting": p.p1_easting,
+                        "northing": p.p1_northing,
+                    },
+                    "endpoint": {
+                        "easting": p.p2_easting,
+                        "northing": p.p2_northing,
+                    }
+                },
+                "target": {
+                    "id": reference.target.pk,
+                    "name": reference.target.name,
+                    "reference": {
+                        "easting": pp[0]["to"].x,
+                        "northing": pp[0]["to"].y
+                    },
+                    "last": {
+                        "easting": pp[1]["to"].x,
+                        "northing": pp[1]["to"].y
+                    },
+                    "delta": {
+                        "easting": pp[1]["to"].x - pp[0]["to"].x,
+                        "northing": pp[1]["to"].y - pp[0]["to"].y
+                    }
+                }
+            }
+        }
+        profiles.append(pi)
+
+
     # for profile in reference.target.profiles:
     #     pass
 
@@ -82,6 +127,7 @@ def meter_task(self, task_id):
         "created": tm.created,
         "target": {
             "id": reference.target.pk,
+            "name": reference.target.name,
             "easting": reference.target.easting,
             "northing": reference.target.northing,
             "height": reference.target.height,
