@@ -12,6 +12,7 @@ import geocom
 import logging
 from common.utils import angle
 from sensors import response
+from sensors.constants import RESPONSE_SUCCESS, RESPONSE_DESCRIPTION
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -26,13 +27,13 @@ class LeicaTachy(Tachy):
     def model_type(self):
         return "GeoCOM"
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, connector, *args, **kwargs):
         """
 
         :param connector: serial.Serial
         :return:
         """
-        super(LeicaTachy, self).__init__(*args, **kwargs)
+        super(LeicaTachy, self).__init__(connector, *args, **kwargs)
 
     def is_leveled(self):
         """
@@ -132,7 +133,10 @@ class LeicaTachy(Tachy):
         current_face = self.get_face().state
         current_face = int(current_face)
         logger.debug("FACE: %d" % current_face)
-        cmd = {"status": response.RESPONSE_SUCCESS, "description": response.RESPONSE_DESCRIPTION}
+        cmd = {
+            "status": RESPONSE_SUCCESS,
+            "description": RESPONSE_DESCRIPTION
+        }
         while int(value) != current_face:
             cmd = self.communicate(geocom.AUT_ChangeFace())
             current_face = int(self.get_face().state)
@@ -290,7 +294,7 @@ class LeicaTachy(Tachy):
         """
         if value in [ON, OFF]:
             lp = self.communicate(geocom.EDM_SetLaserpointer(on_off=value))
-            if lp["status"] == response.RESPONSE_SUCCESS:
+            if lp["status"] == RESPONSE_SUCCESS:
                 self.__laserpointer_state = value
         else:
             lp = {'status': response.RESPONSE_FAIL, 'description': 'Wrong Laserpointer state'}

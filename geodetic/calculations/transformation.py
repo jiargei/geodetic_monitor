@@ -44,6 +44,7 @@ class Transformation(object):
         assert self.__is_set
         lpl = []
         for p in point_list:
+            assert isinstance(p, Point)
             lpl.append({
                 "from": p,
                 "to": self.transform_point(p)
@@ -116,6 +117,9 @@ class Helmert2DTransformation(Transformation):
         self.scale = 1.
         self.translation = Point(0., 0., 0.)
 
+    def set_addition(self, x, y):
+        self.__addition = Point(x, y)
+
     def get_rotation_matrix(self):
         """
 
@@ -148,8 +152,7 @@ class Helmert2DTransformation(Transformation):
         logger.debug(r)
 
         p1 = t + np.dot(r, p.as_array())
-        # p1 = np.dot(np.linalg.inv(r), t-p.as_array())
-        p2 = Point(p1[0], p1[1], p1[2])
+        p2 = Point(float(p1[0]), float(p1[1]), float(p1[2]))
 
         logger.debug(p2)
         return p2
@@ -215,7 +218,7 @@ class Helmert2DTransformation(Transformation):
         """
         assert isinstance(p_from, Point)
         assert isinstance(p_to, Point)
-        self.__ident_from.append(p_from)
+        self.__ident_from.append(p_from - self.__addition)
         self.__ident_to.append(p_to)
         return True
 
@@ -238,7 +241,7 @@ class Helmert2DTransformation(Transformation):
         c = float(xx[2])
         d = float(xx[3])
 
-        self.rotation = np.arctan2(d, c) * 200. / np.pi
+        self.rotation = np.mod(np.arctan2(d, c) * 200. / np.pi, 400.)
         self.scale = np.sqrt(c ** 2 + d ** 2)
         self.translation = Point(a, b, 0.)
         self.__is_set = True

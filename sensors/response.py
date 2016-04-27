@@ -1,16 +1,8 @@
 from geodetic.point import Point
 from uuid import uuid1
+import datetime
 
-from django.utils import timezone
-
-FACE_ONE = 0
-FACE_TWO = 1
-
-
-RESPONSE_SUCCESS = 200
-RESPONSE_WARN = 500
-RESPONSE_FAIL = 400
-RESPONSE_DESCRIPTION = "OK"
+from constants import FACE_ONE, FACE_TWO, RESPONSE_DESCRIPTION, RESPONSE_SUCCESS, RESPONSE_FAIL, RESPONSE_WARN
 
 
 class Response(object):
@@ -28,7 +20,7 @@ class Response(object):
         :return:
         """
         self.uuid = kwargs.get("uuid", str(uuid1()))
-        self.created = kwargs.get("created", timezone.localtime(timezone.now()))
+        self.created = kwargs.get("created", datetime.datetime.now())
         tmp_dict = kwargs.get("data_dict", {})
         if tmp_dict:
             self.status = tmp_dict["status"]

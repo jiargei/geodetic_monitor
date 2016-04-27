@@ -19,14 +19,14 @@ class LeicaTPS1100TachyTestCase(TachySensorTestCase):
         s = serial.Serial(port=self.port, timeout=7)
         if not s.isOpen():
             s.open()
-        self.sensor = TPS1100(rs232=s)
+        self.sensor = TPS1100(connector=s)
 
     def test_get_sensor_name(self):
         logger.debug("Testing sensor name")
         r = self.sensor.get_instrument_name()
         logger.debug(r)
         self.assertTrue("T" in r["INSTRUMENT_NAME"],
-                        msg="Sensor should be a TPS1100, got %s instead" % r["INSTRUMENT_NAME"])
+                        msg="Sensor should be a TPS1100, got %s instead" % r.string)
 
     def test_message_to_logstash(self):
         """
@@ -43,11 +43,11 @@ class FakeTachySensorTestCase(TachySensorTestCase):
         super(FakeTachySensorTestCase, self).__init__(*args, **kwargs)
 
     def setUp(self):
-        self.sensor = FakeTachy(port='/dev/null')
+        self.sensor = FakeTachy(connector='/dev/null')
 
     def test_get_sensor_name(self):
         logger.debug("Testing sensor name")
         r = self.sensor.get_instrument_name()
         logger.debug(r)
-        self.assertTrue("Fake" in r["INSTRUMENT_NAME"],
-                        msg="Sensor should be a Fake, got %s instead" % r["INSTRUMENT_NAME"])
+        self.assertTrue("Fake" in r.string,
+                        msg="Sensor should be a Fake, got %s instead" % r.string)

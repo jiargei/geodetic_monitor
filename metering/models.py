@@ -65,7 +65,7 @@ class Coordinate(models.Model):
                 'z': self.height}
 
     def as_point(self):
-        return Point(self.easting, self.northing, self.height)
+        return Point(float(self.easting), float(self.northing), float(self.height))
 
 
 class Station(Coordinate):
@@ -147,13 +147,18 @@ class Profile(models.Model):
     p2_easting = models.DecimalField(default=0., max_digits=10, decimal_places=3)
     p2_northing = models.DecimalField(default=0., max_digits=10, decimal_places=3)
 
+    def __unicode__(self):
+        return u"%s - %s" % (self.project, self.name)
+
     def get_length(self):
         """
 
         Returns:
 
         """
-        return self.get_p1_as_point().dist_slope(self.get_p2_as_point())
+        l = self.get_p1_as_point().dist_slope(self.get_p2_as_point())
+        print "Punktabstand: %.3f" % l
+        return l
 
     def get_p1_as_point(self):
         """
@@ -161,7 +166,7 @@ class Profile(models.Model):
         Returns:
 
         """
-        return Point(self.p1_easting, self.p1_northing)
+        return Point(float(self.p1_easting), float(self.p1_northing))
 
     def get_p2_as_point(self):
         """
@@ -169,7 +174,7 @@ class Profile(models.Model):
         Returns:
 
         """
-        return Point(self.p2_easting, self.p2_northing)
+        return Point(float(self.p2_easting), float(self.p2_northing))
 
     def get_target(self, p):
         """

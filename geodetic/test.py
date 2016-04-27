@@ -11,7 +11,40 @@ class TransformationTestCase(unittest.TestCase):
     """
 
     """
+
     def setUp(self):
+        self.setup_two()
+
+    def setup_two(self):
+        """
+        Punkt          Epoche     Y  [m]   X  [m]     H  [m]   Code   MS
+        DP01G                     5195.093, 337187.746, 156.225         M34
+        DP01L                        6.8283, 3.6133
+
+        Profile
+        P1  5187.6424, 337185.704 => 0.0, 0.0
+        P2  5202.2756, 337182.444 => 14.9199, 0.0
+
+        rotation = 1,7899974 rad
+        scale = 1
+        translation = ?
+
+        Returns:
+
+        """
+        self.ident_from = []
+        self.ident_to = []
+        self.ident_from.append(Point(5187.6424, 337185.704))
+        self.ident_to.append(Point(0., 0.))
+        self.ident_from.append(Point(5202.2756, 337182.444))
+        self.ident_to.append(Point(14.9199, 0.))
+
+        self.points_from = [Point(5195.093, 337187.746)]
+        self.points_to = [Point(7.722, 0.234)]
+        self.addition = Point(5100, 337100)
+        self.addition = Point()
+
+    def setup_one(self):
         """
 
         P1G: X=402.2956  Y=195.0549  Z=0
@@ -35,6 +68,7 @@ class TransformationTestCase(unittest.TestCase):
 
         self.points_from = [Point(428.5677, 238.1267)]
         self.points_to = [Point(44.8160, 23.1717)]
+        self.addition = Point()
 
     def test_transformation(self):
         """
@@ -43,12 +77,15 @@ class TransformationTestCase(unittest.TestCase):
 
         """
         h2d = Helmert2DTransformation()
+        h2d.set_addition(self.addition.x, self.addition.y)
         for i in range(len(self.ident_from)):
             h2d.add_ident_pair(self.ident_from[i], self.ident_to[i])
 
         h2d.calculate()
-        logger.debug(h2d.get_parameters())
+        logger.info(h2d.get_parameters())
         new_points = h2d.transform(self.points_from)
         p0 = new_points[0]
         p1 = p0["to"]
-        self.assertTrue((self.points_to[0]-p1).norm()<1e-3)
+        n = (self.points_to[0]+self.addition-p1).norm()
+        logger.info("diff: %f" % n)
+        self.assertTrue(n<1e-3)

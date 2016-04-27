@@ -77,42 +77,43 @@ def meter_task(self, task_id):
     tc = sensor_class.get_target()
 
     profiles = []
-    for p in reference.target.profiles:
-        t0 = p.get_target(reference.target.as_point())
-        ti = p.get_target(tc.as_point())
+    for p in reference.target.profiles.all():
+        t0 = p.get_target(reference.target.as_point())[0]
+        ti = p.get_target(tc.as_point())[0]
 
         pi = {
             "profile": {
                 "name": p.name,
                 "system": {
                     "startpoint": {
-                        "easting": p.p1_easting,
-                        "northing": p.p1_northing,
+                        "easting": float(p.p1_easting),
+                        "northing": float(p.p1_northing),
                     },
                     "endpoint": {
-                        "easting": p.p2_easting,
-                        "northing": p.p2_northing,
+                        "easting": float(p.p2_easting),
+                        "northing": float(p.p2_northing),
                     }
                 },
                 "target": {
                     "id": reference.target.pk,
                     "name": reference.target.name,
                     "reference": {
-                        "easting": t0["to"].x,
-                        "northing": t0["to"].y
+                        "easting": float(t0["to"].x),
+                        "northing": float(t0["to"].y)
                     },
                     "last": {
-                        "easting": ti["to"].x,
-                        "northing": ti["to"].y
+                        "easting": float(ti["to"].x),
+                        "northing": float(ti["to"].y)
                     },
                     "delta": {
-                        "easting": ti["to"].x - t0["to"].x,
-                        "northing": ti["to"].y - t0["to"].y
+                        "easting": float(ti["to"].x - t0["to"].x),
+                        "northing": float(ti["to"].y - t0["to"].y)
                     }
                 }
             }
         }
         profiles.append(pi)
+    print profiles
 
     tmd = {
         "id": tm.uuid,

@@ -7,8 +7,8 @@ import aut
 import bap
 import tmc
 from returncodes import RETURNCODES
-from common.constants import ON
-from sensors.response import RESPONSE_DESCRIPTION, RESPONSE_SUCCESS
+from sensors.constants import ON
+from sensors.constants import RESPONSE_DESCRIPTION, RESPONSE_SUCCESS
 
 
 logging.basicConfig(level=logging.INFO)

@@ -2,9 +2,8 @@ import unittest
 from abc import ABCMeta, abstractmethod
 import logging
 import time
-from response import RESPONSE_SUCCESS
-
-from common.constants import FACE_ONE, FACE_TWO, OFF
+from constants import RESPONSE_SUCCESS
+from constants import FACE_ONE, FACE_TWO, OFF
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -29,7 +28,7 @@ class SensorTestCase(unittest.TestCase):
     def test_get_response(self):
         logger.debug("Testing sensor NULL response")
         r = self.sensor.get_response()
-        self.assertTrue(r["status"] == RESPONSE_SUCCESS, msg="Status code is not %d" % RESPONSE_SUCCESS)
+        self.assertTrue(r.status == RESPONSE_SUCCESS, msg="Status code is not %d" % RESPONSE_SUCCESS)
 
     @abstractmethod
     def test_get_sensor_name(self):
@@ -78,6 +77,10 @@ class TachySensorTestCase(SensorTestCase):
     def test_get_angles(self):
         r = self.sensor.get_angles(atr=False)
         self.assertEqual(r.status, RESPONSE_SUCCESS)
+
+    def test_get_measurement(self):
+        r = self.sensor.get_measurement()
+        self.assertTrue(r.status == RESPONSE_SUCCESS)
 
     def tearDown(self):
         self.sensor.set_laser_pointer(OFF)

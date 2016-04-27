@@ -4,7 +4,7 @@ from import_export.resources import ModelResource
 from import_export.fields import Field
 from import_export.widgets import ForeignKeyWidget
 
-from .models import Sensor, ObservationType, Position, Reference, Target, Station
+from .models import Sensor, ObservationType, Position, Reference, Target, Station, Profile
 
 
 class ReferenceInline(admin.TabularInline):
@@ -35,6 +35,11 @@ class ObservationTypeAdmin(admin.ModelAdmin):
 @admin.register(Position)
 class PositionAdmin(admin.ModelAdmin):
     inlines = [ReferenceInline, StationInline]
+
+
+@admin.register(Profile)
+class ProfileAdmin(admin.ModelAdmin):
+    pass
 
 
 class TargetRessource(ModelResource):

@@ -17,7 +17,7 @@ class BoxInline(admin.TabularInline):
 
 
 @admin.register(User)
-class UserAdmin(UserAdmin):
+class MyUserAdmin(UserAdmin):
     inlines = [MembershipInline]
     list_display = UserAdmin.list_display + ('num_memberships',)
 
@@ -28,6 +28,7 @@ class UserAdmin(UserAdmin):
 
     def num_memberships(self, obj):
         return obj.num_memberships
+
     num_memberships.admin_order_field = 'num_memberships'
     num_memberships.short_description = 'number of memberships'
 

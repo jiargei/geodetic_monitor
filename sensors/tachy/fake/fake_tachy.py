@@ -28,9 +28,14 @@ class FakeTachy(Tachy):
     """
     Produces allways same measurements with:
 
-    Punkt          Epoche     Y  [m]      X  [m]         H  [m]   Code   MS
-    DP01                      5195.093    337187.746    156.225          M34
-    POS1                      5191.591    337195.883    156.168          M34
+    Punkt          Epoche     Y  [m]   X  [m]     H  [m]   Code   MS
+    DP01                      5195.093,337187.746,156.225         M34
+    POS1                      5191.591,337195.883,156.168         M34
+
+    Profile
+    P1  X=5187.6424  Y=337185.704  Z=0
+    P2  X=5202.4183  Y=337189.277  Z=0
+    Delta X = -7.4506,  Delta Y = -2.0420,  Delta Z = 0.0000
 
     HZ = 174.1248
     V = 99.5891
@@ -41,10 +46,9 @@ class FakeTachy(Tachy):
     brand = "FaKeBrAnD"
     model = "FaKeMoDeL"
     model_type = "Fake"
-    sensor_type = "Fake"
 
-    def __init__(self, *args, **kwargs):
-        super(FakeTachy, self).__init__(*args, **kwargs)
+    def __init__(self, connector, *args, **kwargs):
+        super(FakeTachy, self).__init__(connector, *args, **kwargs)
         self.__horizontal_angle = 174.1248 + random.random()*3e-3
         self.__vertical_angle = 99.5891 + random.random()*3e-3
         self.__slope_distance = 8.859 + random.random() * 2e-3
@@ -73,7 +77,7 @@ class FakeTachy(Tachy):
         self.__height = p.z
         self.__orientation = 0.0
         self.__temperature = 21.14 + random.random()*1e-1
-        self.__path = "/dev/null"
+        self.__path = connector
         self.__baudrate = 9600
         self.__bytesize = EIGHTBITS
         self.__stopbits = STOPBITS_ONE
