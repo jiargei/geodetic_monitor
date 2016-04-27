@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 from django.db import models
 from django.utils import timezone
-import math
+import numpy as np
 
 from common import constants
 from common.fields import UIDField
@@ -185,8 +185,46 @@ class Profile(models.Model):
         Returns:
 
         """
-        h2d = transformation.Helmert2DTransformation()
-        h2d.add_ident_pair(self.get_p1_as_point(), Point(0., 0.))
-        h2d.add_ident_pair(self.get_p2_as_point(), Point(self.get_length(), 0.))
-        h2d.calculate()
-        return h2d.transform([p])
+        a = self.get_p2_as_point() - self.get_p1_as_point()
+        b = p - self.get_p1_as_point()
+        c = p - self.get_p2_as_point()
+
+        if a.norm2D() == 0:
+            # TODO
+            pass
+
+        if b.norm2D() == 0:
+            # TODO
+            pass
+
+        if c.norm2D() == 0:
+            pn = Point(0., a.norm2D())
+
+        alpha = np.arccos(np.vdot(a.as_array(), b.as_array()) / a.norm2D() / b.norm2D())
+        cross = np.sin(alpha) * b.norm2D()
+        length = np.cos(alpha) * b.norm2D()
+
+        determinant = 0.
+        determinant += self.get_p2_as_point().x * p.y
+        determinant += self.get_p1_as_point().x * self.get_p2_as_point().y
+        determinant += self.get_p1_as_point().y * p.x
+        determinant -= self.get_p2_as_point().x * self.get_p1_as_point().y
+        determinant -= self.get_p2_as_point().y * p.x
+        determinant -= self.get_p1_as_point().x * p.y
+
+        if determinant <= 0:
+            signum = 1
+        else:
+            signum = -1
+
+        return {
+            "from": p,
+            "to": Point(cross*signum, length)
+        }
+
+        # h2d = transformation.Helmert2DTransformation()
+        # h2d.add_ident_pair(self.get_p1_as_point(), Point(0., 0.))
+        # h2d.add_ident_pair(self.get_p2_as_point(), Point(self.get_length(), 0.))
+        # h2d.calculate()
+        # return h2d.transform([p])
+

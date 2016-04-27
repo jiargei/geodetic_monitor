@@ -78,8 +78,8 @@ def meter_task(self, task_id):
 
     profiles = []
     for p in reference.target.profiles.all():
-        t0 = p.get_target(reference.target.as_point())[0]
-        ti = p.get_target(tc.as_point())[0]
+        t0 = p.get_target(reference.target.as_point())
+        ti = p.get_target(tc.as_point())
 
         pi = {
             "profile": {

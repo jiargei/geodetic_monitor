@@ -116,6 +116,7 @@ class Helmert2DTransformation(Transformation):
         self.rotation = 0.
         self.scale = 1.
         self.translation = Point(0., 0., 0.)
+        self.__addition = Point()
 
     def set_addition(self, x, y):
         self.__addition = Point(x, y)

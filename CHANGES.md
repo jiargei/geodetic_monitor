@@ -28,4 +28,11 @@
 
 - added Port and Box to Station class
 - celery worker with single tachy measurement
+- Profile calculation
+- Response Class for all Measurements
+- fake tachy class implemented
+- leica tachy class implemented
+- vagrant system
+- logstash config for tachy and periodic_task
+
 
