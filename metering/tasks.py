@@ -78,13 +78,9 @@ def meter_task(self, task_id):
 
     profiles = []
     for p in reference.target.profiles:
-        h2d = Helmert2DTransformation()
-        h2d.add_ident_pair(Point(p.p1_easting, p.p1_northing), Point(0., 0.))
-        d0 = math.sqrt((p.p1_easting-p.p2_easting) ** 2 + (p.p1_northing-p.p2_northing))
-        h2d.add_ident_pair(Point(p.p2_easting, p.p2_northing), Point(d0, 0.))
-        h2d.calculate()
-        pp = h2d.transform([Point(reference.target.easting, reference.target.northing),
-                            Point(tc.easting, tc.northing)])
+        t0 = p.get_target(reference.target.as_point())
+        ti = p.get_target(tc.as_point())
+
         pi = {
             "profile": {
                 "name": p.name,
@@ -102,25 +98,21 @@ def meter_task(self, task_id):
                     "id": reference.target.pk,
                     "name": reference.target.name,
                     "reference": {
-                        "easting": pp[0]["to"].x,
-                        "northing": pp[0]["to"].y
+                        "easting": t0["to"].x,
+                        "northing": t0["to"].y
                     },
                     "last": {
-                        "easting": pp[1]["to"].x,
-                        "northing": pp[1]["to"].y
+                        "easting": ti["to"].x,
+                        "northing": ti["to"].y
                     },
                     "delta": {
-                        "easting": pp[1]["to"].x - pp[0]["to"].x,
-                        "northing": pp[1]["to"].y - pp[0]["to"].y
+                        "easting": ti["to"].x - t0["to"].x,
+                        "northing": ti["to"].y - t0["to"].y
                     }
                 }
             }
         }
         profiles.append(pi)
-
-
-    # for profile in reference.target.profiles:
-    #     pass
 
     tmd = {
         "id": tm.uuid,

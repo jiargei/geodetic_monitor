@@ -24,8 +24,8 @@ postgresql_version="9.4"
 ## Install
 
 sudo apt-get update
-sudo apt-get upgrade -y
-sudo apt-get install -y build-essential python-pip python-setuptools python-dev
+# sudo apt-get upgrade -y
+sudo apt-get install -y build-essential python-pip python-setuptools python-dev python-serial
 sudo apt-get install -y cython python-numpy python-scipy python-matplotlib
 sudo apt-get install -y vim-nox git curl fish
 sudo apt-get install -y oracle-java8-installer postgresql-server-dev-$postgresql_version postgresql-$postgresql_version

@@ -1,7 +1,11 @@
-from common.constants import FACE_ONE
+from geodetic.point import Point
 from uuid import uuid1
 
 from django.utils import timezone
+
+FACE_ONE = 0
+FACE_TWO = 1
+
 
 RESPONSE_SUCCESS = 200
 RESPONSE_WARN = 500
@@ -162,6 +166,9 @@ class CoordinateResponse(Response):
         self.easting = float(format(e, '.4f'))
         self.northing = float(format(n, '.4f'))
         self.height = float(format(h, '.4f'))
+
+    def as_point(self):
+        return Point(self.easting, self.northing, self.height)
 
 
 class CompensatorResponse(Response):

@@ -1,6 +1,5 @@
 import serial
 import logging
-import time
 
 from leica.leica_tachy_tps1100 import TPS1100
 from fake.fake_tachy import FakeTachy

@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 from django.db import models
 from django.utils import timezone
+import math
 
 from common import constants
 from common.fields import UIDField
@@ -8,6 +9,9 @@ from common.models import CreatedModifiedMixin
 
 from .utils import get_sensor_type_choices, get_sensor_model_choices
 from .apps import get_sensor_class
+
+from geodetic.point import Point
+from geodetic.calculations import transformation
 
 
 class ObservationType(models.Model):
@@ -59,6 +63,9 @@ class Coordinate(models.Model):
         return {'x': self.easting,
                 'y': self.northing,
                 'z': self.height}
+
+    def as_point(self):
+        return Point(self.easting, self.northing, self.height)
 
 
 class Station(Coordinate):
@@ -139,3 +146,42 @@ class Profile(models.Model):
     p1_northing = models.DecimalField(default=0., max_digits=10, decimal_places=3)
     p2_easting = models.DecimalField(default=0., max_digits=10, decimal_places=3)
     p2_northing = models.DecimalField(default=0., max_digits=10, decimal_places=3)
+
+    def get_length(self):
+        """
+
+        Returns:
+
+        """
+        return self.get_p1_as_point().dist_slope(self.get_p2_as_point())
+
+    def get_p1_as_point(self):
+        """
+
+        Returns:
+
+        """
+        return Point(self.p1_easting, self.p1_northing)
+
+    def get_p2_as_point(self):
+        """
+
+        Returns:
+
+        """
+        return Point(self.p2_easting, self.p2_northing)
+
+    def get_target(self, p):
+        """
+
+        Args:
+            p: Point
+
+        Returns:
+
+        """
+        h2d = transformation.Helmert2DTransformation()
+        h2d.add_ident_pair(self.get_p1_as_point(), Point(0., 0.))
+        h2d.add_ident_pair(self.get_p2_as_point(), Point(self.get_length(), 0.))
+        h2d.calculate()
+        return h2d.transform([p])
