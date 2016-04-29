@@ -8,7 +8,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-
 def covariance2(n, wR, ws, wz, l):
     """
 
@@ -114,8 +113,8 @@ def gen_design_plane(Pi, Pk):
     :param Pk:
     :return:
     """
-    xi, yi, zi = Pi.class_to_list()
-    xk, yk, zk = Pk.class_to_list()
+    xi, yi, zi = Pi.as_list()
+    xk, yk, zk = Pk.as_list()
 
     # partial derivatives Distance
     dS_dxi = (1.0 * xi - 1.0 * xk) * scipy.sqrt((-xi + xk) ** 2 + (-yi + yk) ** 2)

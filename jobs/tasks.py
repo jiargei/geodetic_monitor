@@ -6,7 +6,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 
 from dimosy.celery import app
 from .models import PeriodicTask
-from metering.tasks import meter_task
+from metering.tasks import meter_task, resection_task
 
 logger = logging.getLogger(__name__)
 
@@ -21,22 +21,23 @@ def schedule(self):
     for task in tasks:
         if not task.is_due():
             continue
-        tmd = {
-            "periodic_task": {
-                "task_id": task.id,
-                "object_id": task.object_id,
-                "content_type": task.task_object.__class__.__name__,
-                "project": task.project.id,
-                "info": str(task)
-            }
-        }
+        tmd = task.get_es_data()
         tmp_file = "/vagrant/tmp/log/multi_%s.log" % tmp_time.strftime("%Y%m%d")
         f = open(tmp_file, 'a')
         f.write(str(json.dumps(tmd, cls=DjangoJSONEncoder))+"\n")
         f.close()
         # logger.debug("wrote JSON to log file")
 
-        logger.debug("Applying task %s...", task.id)
-        task.last_started = tmp_time
-        task.save()
-        meter_task.apply_async([task.id])
+        logger.debug("Applying task %s...", task.pk)
+
+        # Simple Measurement, Control Measurement Tasks
+        if task.category in ['s', 'c']:
+            task.last_started = tmp_time
+            task.save()
+            meter_task.apply_async([[task.pk, tmp_time]])
+
+        # Resection Task
+        elif task.category in ['r']:
+            task.last_started = tmp_time
+            task.save()
+            resection_task.apply_async([[task.pk, tmp_time]])

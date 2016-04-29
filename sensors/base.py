@@ -58,6 +58,15 @@ class Sensor(object):
         """
         pass
 
+    @abstractmethod
+    def get_elastic_data(self, **kwargs):
+        """
+
+        Returns:
+
+        """
+        pass
+
 
 def create_uid(k="UID"):
     return {k: uuid1()}

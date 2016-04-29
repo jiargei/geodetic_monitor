@@ -17,8 +17,7 @@ from sensors import response
 from geodetic.calculations import convert
 from geodetic.calculations.polar import grid_to_polar
 from geodetic.point import Point
-from common.constants import FACE_ONE, FACE_TWO, OFF, ON
-
+from sensors.constants import FACE_ONE, FACE_TWO, OFF, ON
 
 
 @property
@@ -43,6 +42,55 @@ class Tachy(Sensor):
         self.set_laser_pointer(self.__laserpointer_state)
 
     def __del__(self):
+        self.set_laser_pointer(OFF)
+
+    def get_elastic_data(self, **kwargs):
+        """
+
+        Args:
+            **kwargs:
+
+        Returns:
+
+        """
+        station = kwargs.get("station")
+        target = kwargs.get("target")
+        assert isinstance(station, Point)
+        assert isinstance(target, Point)
+        folding_square = grid_to_polar(station, target)
+        self.set_laser_pointer(ON)
+        self.set_station(easting=station.x,
+                         northing=station.y,
+                         height=station.z,
+                         instrument_height=0.0)
+
+        self.set_polar(horizontal_angle=folding_square["azimut"],
+                       vertical_angle=folding_square["zenit"],
+                       aim_target=True)
+
+        tm = self.get_measurement()
+        tl = self.get_compensator()
+        tt = self.get_temperature()
+        tc = self.get_target()
+
+        tmd = {
+            "tachy_measurement": {
+                "id": tm.uuid,
+                "created": tm.created,
+                "raw": {
+                    "horizontal_angle": tm.horizontal_angle,
+                    "vertical_angle": tm.vertical_angle,
+                    "slope_distance": tm.slope_distance,
+                    "easting": tc.easting,
+                    "northing": tc.northing,
+                    "height": tc.height,
+                    "compensator_cross": tl.compensator_cross,
+                    "compensator_length": tl.compensator_length,
+                    "device_temperature": tt.temperature,
+                    "reflector_height": tm.reflector_height,
+                   },
+            }
+        }
         self.set_laser_pointer(OFF)
 
     def set_polar(self, horizontal_angle, vertical_angle, aim_target=False):

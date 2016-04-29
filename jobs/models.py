@@ -5,14 +5,32 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
+from polymorphic.models import PolymorphicModel
+
 
 from bitfield import BitField
 
 from accounts.models import Project
 from common.fields import UIDField
+from common.constants import TASK_CATEGORY_CHOICES
 
 
-class PeriodicTask(models.Model):
+class Task(models.Model):
+    """
+
+    """
+    id = UIDField()
+
+    def is_due(self):
+        """
+
+        :return: True, if task should be executed, else False
+        :rtype: bool
+        """
+        return False
+
+
+class PeriodicTask(PolymorphicModel):
     """
 
     """
@@ -23,7 +41,8 @@ class PeriodicTask(models.Model):
     end_time = models.TimeField()
     frequency = models.DecimalField(default=10., max_digits=4, decimal_places=1)
     last_started = models.DateTimeField(null=True, blank=True, db_index=True)
-    last_completed = models.DateTimeField(null=True, blank=True, db_index=True)
+    last_success = models.DateTimeField(null=True, blank=True, db_index=True)
+    category = models.CharField(default='m', choices=TASK_CATEGORY_CHOICES, max_length=1)
 
     day_of_week = BitField(flags=(
         ("0", _('monday')),
@@ -57,10 +76,10 @@ class PeriodicTask(models.Model):
         else:
             dt_task = (temp_time - self.last_started).total_seconds()
 
-        if self.last_completed is None:
+        if self.last_success is None:
             dt_success = float(self.frequency) * 60
         else:
-            dt_success = (temp_time - self.last_completed).total_seconds()
+            dt_success = (temp_time - self.last_success).total_seconds()
 
         dt_frequency = (temp_time - timezone.datetime(1970, 1, 1, tzinfo=timezone.get_current_timezone())).total_seconds()
 
@@ -74,17 +93,36 @@ class PeriodicTask(models.Model):
             return True
         return False
 
+    def get_es_data(self):
+        """
 
-class Task(models.Model):
+        Returns:
+
+        """
+        return {
+            "periodic_task": {
+                "task_id": self.pk,
+                "object_id": self.object_id,
+                "content_type": self.task_object.__class__.__name__,
+                "project": self.project.pk,
+                "info": str(self)
+            }
+        }
+
+
+class MeterTask(PeriodicTask):
     """
 
     """
-    id = UIDField()
 
-    def is_due(self):
-        """
 
-        :return: True, if task should be executed, else False
-        :rtype: bool
-        """
-        return False
+class ControlTask(PeriodicTask):
+    """
+
+    """
+
+
+class ResectionTask(PeriodicTask):
+    """
+
+    """

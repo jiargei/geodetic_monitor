@@ -145,24 +145,29 @@ class Point(object):
         same data."""
         return 'Point(x=%12.3f, y=%12.3f, z=%12.3f)' % (self.x, self.y, self.z)
     
-    def to_dict(self):
+    def as_coordinate_dict(self):
         return {'EASTING': self.x,
                 'NORTHING': self.y,
                 'HEIGHT': self.z}
         
-    def dict_to_class(self, point_dict):
+    def from_dict(self, point_dict):
         self.x = point_dict['x']
         self.y = point_dict['y']
         self.z = point_dict['z']
+
+    def from_list(self, point_list):
+        self.x = point_list[0]
+        self.y = point_list[1]
+        self.z = point_list[2]
         
-    def class_to_list(self):
+    def as_list(self):
         """
 
         :return:
         """
         return [self.x, self.y, self.z]
     
-    def class_to_dict(self):
+    def as_dict(self):
         """
 
         :return:
@@ -171,3 +176,81 @@ class Point(object):
         return {'x': self.x,
                 'y': self.y,
                 'z': self.z}
+
+
+class MeasuredPoint(Point):
+    """
+
+    """
+    def __init__(self, x, y, z, station_name, target_name, horizontal_angle, vertical_angle, slope_distance):
+        """
+
+        Args:
+            station_name:
+            horizontal_angle:
+            vertical_angle:
+            slope_distance:
+
+        Returns:
+
+        """
+        super(MeasuredPoint, self).__init__(x, y, z)
+        self.station_name = station_name
+        self.target_name = target_name
+        self.horizontal_angle = horizontal_angle
+        self.vertical_angle = vertical_angle
+        self.slope_distance = slope_distance
+
+    def get_horizotal_distance(self):
+        return self.slope_distance * np.sin(self.vertical_angle * np.pi / 200)
+
+    def get_slope_distance(self):
+        return self.slope_distance
+
+    def get_horizontal_angle(self):
+        return self.horizontal_angle
+
+    def get_vertical_angle(self):
+        return self.vertical_angle
+
+    def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
+        return "Measured Point( NAME=%10s, VON=%10s, X=%15.3f, Y=%15.4f, Z=%15.4f, HZ =%15.4f, V=%15.4f, SD=%15.4f)" % (
+            self.target_name,
+            self.station_name,
+            self.x,
+            self.y,
+            self.z,
+            self.horizontal_angle,
+            self.vertical_angle,
+            self.slope_distance
+        )
+
+
+class Station(Point):
+    """
+
+    """
+    def __init__(self, name="Standpunkt", x=0, y=0, z=0, ori=0):
+        super(Station, self).__init__(x, y, z)
+        self.name = name
+        self.ori = self.ori2 = ori
+
+        self.Qxx = None
+        self.Qlld = None
+        self.s0 = 1
+
+        self.sigmaEasting = self.sigmaNorthing = self.sigmaHeight = self.sigmaOrientation = None
+
+    def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
+        """
+        Liefert die Transformationsparamter als formatierten Output.
+        """
+        return """Station(NAME=%10s, X=%15.4f, Y=%15.4f, Z=%15.4f, ORI=%15.4f)""" % (
+            self.name, self.x, self.y, self.z, self.ori
+        )

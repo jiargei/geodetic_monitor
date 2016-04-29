@@ -28,6 +28,7 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
+# Django Basic Apps
 INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
@@ -35,15 +36,24 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+)
+
+# Django Extensions
+INSTALLED_APPS += (
     'django_extensions',
-    'bootstrap3',
+    'bootstrap3'
+    'polymorphic',
+    'django.contrib.contenttypes',
+    'import_export',
+)
+
+# Dimosy Apps
+INSTALLED_APPS += (
     'accounts',
     'alarms',
     'metering',
     'jobs',
-    'import_export',
 )
-
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',

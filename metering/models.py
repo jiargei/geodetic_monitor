@@ -117,6 +117,16 @@ class Reference(models.Model):
         return u"%s -> %s" % (self.position, self.target)
 
 
+class Restation(models.Model):
+    """
+
+    """
+    id = UIDField()
+    frequency = models.DecimalField(default=10., max_digits=4, decimal_places=1)
+    position = models.ForeignKey(Position, related_name='restations')
+    station = models.ForeignKey(Station, related_name='restation')
+
+
 class Target(Coordinate):
     """
 
