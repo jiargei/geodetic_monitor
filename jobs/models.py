@@ -23,6 +23,7 @@ class PeriodicTask(models.Model):
     end_time = models.TimeField()
     frequency = models.DecimalField(default=10., max_digits=4, decimal_places=1)
     last_started = models.DateTimeField(null=True, blank=True, db_index=True)
+    last_completed = models.DateTimeField(null=True, blank=True, db_index=True)
 
     day_of_week = BitField(flags=(
         ("0", _('monday')),
@@ -52,17 +53,23 @@ class PeriodicTask(models.Model):
         temp_time = timezone.localtime(timezone.now())
 
         if self.last_started is None:
-            dt1 = float(self.frequency) * 60
+            dt_task = float(self.frequency) * 60
         else:
-            dt1 = (temp_time - self.last_started).total_seconds()
+            dt_task = (temp_time - self.last_started).total_seconds()
 
-        dt0 = (temp_time - timezone.datetime(1970, 1, 1, tzinfo=timezone.get_current_timezone())).total_seconds()
+        if self.last_completed is None:
+            dt_success = float(self.frequency) * 60
+        else:
+            dt_success = (temp_time - self.last_completed).total_seconds()
+
+        dt_frequency = (temp_time - timezone.datetime(1970, 1, 1, tzinfo=timezone.get_current_timezone())).total_seconds()
 
         if self.active \
                 and self.start_time <= temp_time.time() <= self.end_time \
                 and (
-                        (dt1 / 60.) >= self.frequency
-                        or (dt0 % (60. * float(self.frequency))) <= 5
+                    (dt_task / 60.) >= self.frequency or
+                    (dt_frequency % (60. * float(self.frequency))) <= 5 or
+                    (dt_success / 60) >= self.frequency
                 ):
             return True
         return False

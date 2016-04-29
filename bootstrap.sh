@@ -40,7 +40,7 @@ sudo -u postgres psql < create_db.sql
 
 ## Django + Plugins
 
-pip install -r requirements.txt --no-deps
+sudo pip install -r requirements.txt --no-deps
 python manage.py migrate
 
 

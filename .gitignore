@@ -89,7 +89,7 @@ ENV/
 .ropeproject
 
 # Vagrant Image
-.vagrant
+/.vagrant
 
 # Temp Folder
-/tmp
+/tmp/log/

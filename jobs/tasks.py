@@ -22,13 +22,15 @@ def schedule(self):
         if not task.is_due():
             continue
         tmd = {
-            "task_id": task.id,
-            "object_id": task.object_id,
-            "content_type": task.task_object.__class__.__name__,
-            "project": task.project.id,
-            "info": str(task)
+            "periodic_task": {
+                "task_id": task.id,
+                "object_id": task.object_id,
+                "content_type": task.task_object.__class__.__name__,
+                "project": task.project.id,
+                "info": str(task)
+            }
         }
-        tmp_file = "/vagrant/tmp/log/task_%s.log" % tmp_time.strftime("%Y%m%d")
+        tmp_file = "/vagrant/tmp/log/multi_%s.log" % tmp_time.strftime("%Y%m%d")
         f = open(tmp_file, 'a')
         f.write(str(json.dumps(tmd, cls=DjangoJSONEncoder))+"\n")
         f.close()

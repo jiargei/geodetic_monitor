@@ -116,56 +116,60 @@ def meter_task(self, task_id):
     print profiles
 
     tmd = {
-        "id": tm.uuid,
-        "created": tm.created,
-        "target": {
-            "id": reference.target.pk,
-            "name": reference.target.name,
-            "easting": reference.target.easting,
-            "northing": reference.target.northing,
-            "height": reference.target.height,
-            "reflector_height": 0.0,  # TODO
-        },
-        "position_id": reference.position.pk,
-        "reference_id": reference.pk,
-        "station": {
-            "id": station.pk,
-            "created": station.from_date,
-            "easting": station.easting,
-            "northing": station.northing,
-            "height": station.height,
-        },
-        "task": {
-            "id": task.pk,
-            "type": "periodic",
-        },
-        "raw": {
-            "horizontal_angle": tm.horizontal_angle,
-            "vertical_angle": tm.vertical_angle,
-            "slope_distance": tm.slope_distance,
-            "easting": tc.easting,
-            "northing": tc.northing,
-            "height": tc.height,
-            "compensator_cross": tl.compensator_cross,
-            "compensator_length": tl.compensator_length,
-            "device_temperature": tt.temperature,
-            "reflector_height": tm.reflector_height,
-           },
-        "obtained": {
-            "deasting": tc.easting - reference.target.easting,
-            "dnorthing": tc.northing - reference.target.northing,
-            "dheight": tc.height - reference.target.height,
-            "slope_distance_reduced": tm.slope_distance_reduced,
-            "profiles": profiles,
-        },
+        "tachy_measurement": {
+            "id": tm.uuid,
+            "created": tm.created,
+            "target": {
+                "id": reference.target.pk,
+                "name": reference.target.name,
+                "easting": reference.target.easting,
+                "northing": reference.target.northing,
+                "height": reference.target.height,
+                "reflector_height": 0.0,  # TODO
+            },
+            "position_id": reference.position.pk,
+            "reference_id": reference.pk,
+            "station": {
+                "id": station.pk,
+                "created": station.from_date,
+                "easting": station.easting,
+                "northing": station.northing,
+                "height": station.height,
+            },
+            "task": {
+                "id": task.pk,
+                "type": "periodic",
+            },
+            "raw": {
+                "horizontal_angle": tm.horizontal_angle,
+                "vertical_angle": tm.vertical_angle,
+                "slope_distance": tm.slope_distance,
+                "easting": tc.easting,
+                "northing": tc.northing,
+                "height": tc.height,
+                "compensator_cross": tl.compensator_cross,
+                "compensator_length": tl.compensator_length,
+                "device_temperature": tt.temperature,
+                "reflector_height": tm.reflector_height,
+               },
+            "obtained": {
+                "deasting": tc.easting - reference.target.easting,
+                "dnorthing": tc.northing - reference.target.northing,
+                "dheight": tc.height - reference.target.height,
+                "slope_distance_reduced": tm.slope_distance_reduced,
+                "profiles": profiles,
+            },
+        }
     }
 
     sensor_class.set_laser_pointer(0)
 
-    tmp_file = "/vagrant/tmp/log/tachy_%s.log" % tmp_time.strftime("%Y%m%d")
+    tmp_file = "/vagrant/tmp/log/multi_%s.log" % tmp_time.strftime("%Y%m%d")
     f = open(tmp_file, 'a')
     f.write(str(json.dumps(tmd, cls=DjangoJSONEncoder))+"\n")
     f.close()
+    task.id_completed = True
+    task.save()
 
 
 
