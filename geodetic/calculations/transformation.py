@@ -186,10 +186,8 @@ class Helmert2DTransformation(Transformation):
         assert self.can_calculate()
         for i in range(len(self.__ident_from)):
 
-            ai = np.array([[1, 0, self.__ident_from[i].x, -self.__ident_from[i].y],
-                           [0, 1, self.__ident_from[i].y, self.__ident_from[i].x]])
-            li = np.array([[self.__ident_to[i].x],
-                           [self.__ident_to[i].y]])
+            ai = self.get_ai(self.__ident_from[i])
+            li = self.get_li(self.__ident_to[i])
 
             if a is None or l is None:
                 a = ai
@@ -197,8 +195,21 @@ class Helmert2DTransformation(Transformation):
             else:
                 a = np.vstack([a, ai])
                 l = np.vstack([l, li])
+
         self.__design_matrix = a
         self.__observation_vector = l
+
+    @staticmethod
+    def get_ai(p):
+        return np.array([[1, 0, p.x, -p.y],
+                         [0, 1, p.y, p.x]])
+
+    @staticmethod
+    def get_li(p):
+        return np.array([
+            [p.x],
+            [p.y]]
+        )
 
     def get_parameters(self):
         return {

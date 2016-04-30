@@ -244,6 +244,16 @@ class Station(Point):
 
         self.sigmaEasting = self.sigmaNorthing = self.sigmaHeight = self.sigmaOrientation = None
 
+    def get_target(self, mp):
+        """
+
+        Args:
+            mp:
+
+        Returns:
+
+        """
+
     def __str__(self):
         return self.__repr__()
 

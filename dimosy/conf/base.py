@@ -41,7 +41,7 @@ INSTALLED_APPS = (
 # Django Extensions
 INSTALLED_APPS += (
     'django_extensions',
-    'bootstrap3'
+    'bootstrap3',
     'polymorphic',
     'django.contrib.contenttypes',
     'import_export',

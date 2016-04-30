@@ -5,32 +5,36 @@ import scipy as np
 import scipy.linalg
 import logging
 
-from .. calculations import convert
-    POINT, GEODETIC
-from ... import VARS
 from normalgleichung import normalgleichung
-from .. point import Point
-import design
-import orientation
+from . import design
+
+from .. point import Point, MeasuredPoint, Station
+from .. measurement import TachyMeasurement
+from .. adjustment.orientation import Orientation
 from .. calculations.transformation import Helmert2DTransformation
+from .. calculations.polar import grid_to_polar
+from .. calculations import convert
+
 
 logger = logging.getLogger(__name__)
 
 
-class Adjustmend(object):
+class Adjustment(object):
     """
 
     """
-    def __init__(self, station, target_list):
+    def __init__(self, station, orientation=0., target_list=[]):
         self.__is_set = False
         self.station = station
         self.target_list = target_list
-
+        self.orientation = orientation
         self.sigma_horizontal_angle=None
         self.sigma_vertical_angle=None
         self.sigma_slope_distance=None,
         self.itsmax=100,
         self.SLLFIX=True,
+        self.__a
+        self.__l
         self.iterations=20,
         self.ASSIGN=False,
         self.PATH='',
@@ -117,7 +121,23 @@ class Adjustmend(object):
     :return: Ausgeglichenen Koordinaten und Orientierung des Standpunktes
     """
 
+    def add_measured_point(self, mp):
+        """
+
+        Args:
+            mp: MeasuredPoint
+
+        Returns:
+
+        """
+        assert isinstance(mp, MeasuredPoint)
+        self.target_list.append(mp)
+
     def do_helmert_2d(self):
+        """
+        Bestimmung der Näherungskoordinaten mittels 2D-Helmert
+        und Mittelung der Zenitdistanzen zur Höhenbestimmung.
+        """
         #    ___                  _      _      _       _   _      _                     _
         #   / _ \                | |    (_)    | |     | | | |    | |                   | |
         #  / /_\ \_   _ ___  __ _| | ___ _  ___| |__   | |_| | ___| |_ __ ___   ___ _ __| |_
@@ -127,11 +147,6 @@ class Adjustmend(object):
         #                    __/ |
         #                   |___/
 
-        """
-        Bestimmung der Näherungskoordinaten mittels 2D-Helmert
-        und Mittelung der Zenitdistanzen zur Höhenbestimmung.
-        """
-
         logger.debug("run resection")
 
         s02 = self.s02_apr
@@ -139,261 +154,216 @@ class Adjustmend(object):
         sig_Hz = convert.gon2rad(self.sigma_horizontal_angle)
         sig_V = convert.gon2rad(self.sigma_vertical_angle)
         sig_Sd = self.sigma_slope_distance
+        h2d = Helmert2DTransformation()
 
-    # FILL IN
-    punktVON = []
-    punktNACH = []
-    Z0 = []
+        system_global = []
+        system_local = []
 
-    if debug_mode:
-        print "Angabe:"
-        print "Pi =      dimosy.%s" % Pi
+        for pk in self.target_list:
+            ml = TachyMeasurement(pk.horizontal_angle, pk.vertical_angle, pk.slope_distance, pk.target_height)
+            p_from = ml.to_grid()
+            h2d.add_ident_pair(p_from, pk)
 
-        print "Pn = "
-    for anschluss in Pn:
-        if debug_mode:
-            print "Pn = %s" % anschluss
+        h2d.calculate()
+        self.station.x = h2d.translation.x
+        self.station.y = h2d.translation.y
+        self.station.z = sum(map(lambda t: t.z, self.target_list)) / len(self.target_list)
 
-    if VARS.DEBUG_MODE > 1 and debug_mode:
-        print "Berechne Näherungskoordinaten:%s" % calcApproximation
-
-    if calcApproximation:
-        Pi.X = 0
-        Pi.Y = 0
-        Pi.Z = 0
-
-    for Pk in Pn:
-
-        punktNACH.append(POINT.point(X=Pk.X, Y=Pk.Y, Z=Pk.Z))
-        punktVON.append(GEODETIC.polar_to_grid(P1=Pi,
-                                               HZ=Pk.HZ,
-                                               V=Pk.V,
-                                               SD=Pk.SD))
-
-        Z0.append(GEODETIC.polar_to_grid(P1=Pk,
-                                         HZ=Pk.getHZ(),
-                                         V=200 - Pk.getV(),
-                                         SD=Pk.getSD()).Z)
-
-        if VARS.DEBUG_MODE > 1 and debug_mode:
-            print "Pn.append(dimosy.%s)" % Pk
-            print "PunktVON : %s" % punktVON[-1]
-            print "PunktNACH: %s" % punktNACH[-1]
-
-    if calcApproximation:
-        x0 = HELMERT_2D.ausgleich_helmert_2d(punktVON, punktNACH, iterations=iterations + 5, P0=Pi, debug_mode=debug_mode)
-        Pi.X = x0['RW']
-        Pi.Y = x0['HW']
-        Pi.Z = sum(Z0) / len(Z0)
-
-    if VARS.DEBUG_MODE > 1 and debug_mode:
-        print "\nHelmert"
-        print Pi
-
-    ori = ORIENT.orient(tk=map(lambda pk: GEODETIC.grid_to_polar(Pi, pk)["azimut"], Pn),
-                        Rk=map(lambda pk: pk.getHZ(), Pn))
-
-    if VARS.DEBUG_MODE > 1 and debug_mode:
-        print "\nOrientierung: %10.5f" % ANGLE.corr_hz(ori["orientation"])
-        print "\nSigma:        %10.5f" % ANGLE.corr_hz(ori["sigma"])
+    def do_orientation(self):
+        """
+        Determine Orientation
+        """
+        logger.debug("Calculate Orientation")
+        ori = Orientation()
+        for ti in self.target_list:
+            ori.add_angle_pair(tk=grid_to_polar(self.station, ti),
+                               rk=ti.horizontal_angle)
+        ori.calculate()
+        logger.debug(ori.get())
+        self.orientation = ori.value
 
     # Pi.ORI = ANGLE.corr_hz(ori["orientation"])
+    # t104_113 = np.arctan((Pn[2].X - Pn[1].X)/(Pn[2].Y-Pn[1].Y))
+    # D104_113 = Pn[1].dist_plane(Pn[2])
+    # t104_108 = t104_113 - np.arccos( (D104_113**2 + Pn[1].SD**2 - Pn[2].SD**2)/(2*Pn[1].SD*D104_113) )
+    # Pi.X = Pn[1].X + Pn[1].SD*np.sin(t104_108)
+    # Pi.Y = Pn[1].Y + Pn[1].SD*np.cos(t104_108)
 
-#     t104_113 = np.arctan((Pn[2].X - Pn[1].X)/(Pn[2].Y-Pn[1].Y))
-#     D104_113 = Pn[1].dist_plane(Pn[2])
-#     t104_108 = t104_113 - np.arccos( (D104_113**2 + Pn[1].SD**2 - Pn[2].SD**2)/(2*Pn[1].SD*D104_113) )
-#
-#     Pi.X = Pn[1].X + Pn[1].SD*np.sin(t104_108)
-#     Pi.Y = Pn[1].Y + Pn[1].SD*np.cos(t104_108)
-    if iterations > itsmax:
-        iterations = itsmax
-    its = 0
+    def get_li(self, target):
+        """
 
-#    ___                  _      _      _       _
-#   / _ \                | |    (_)    | |     | |
-#  / /_\ \_   _ ___  __ _| | ___ _  ___| |__   | |     __ _  __ _  ___
-#  |  _  | | | / __|/ _` | |/ _ \ |/ __| '_ \  | |    / _` |/ _` |/ _ \
-#  | | | | |_| \__ \ (_| | |  __/ | (__| | | | | |___| (_| | (_| |  __/
-#  \_| |_/\__,_|___/\__, |_|\___|_|\___|_| |_| \_____/\__,_|\__, |\___|
-#                    __/ |                                   __/ |
-#                   |___/                                   |___/
+        Args:
+            target:
 
-    if debug_mode:
-        print """.. Ausgleich Lage .."""
+        Returns:
 
-    while its < iterations:
-        # print "Iteration Nr. %02d"%its
-        """Bestimmung der Varianzmatrix"""
-        sigVektor = [sig_Hz ** 2, sig_Sd ** 2]
-        p = len(sigVektor)  # Anzahl der unterschiedlichen Beobachtungen
-        Sll = np.mat(np.eye(n * p))
-        for k in range(len(Pn)):
-            for q in range(p):
-                Sll[k * p + q, k * p + q] = sigVektor[q]
+        """
 
-        # P = np.eye(len(Pn) * 2)
-        P = scipy.linalg.inv(s02 * Sll)
+        tmpL = np.transpose(np.array([convert.gon2rad(target.horizontal_angle),
+                                      target.get_slope_distance()
+                                      ]
+                                     )
+                            )
+        LL0 = grid_to_polar(self.station, target, self.orientation)
+        tmpL0 = np.transpose(np.array([convert.gon2rad(LL0['azimut']),
+                                       LL0['distancePlane']]))
 
-        FIRST = True
-        # print "%d: %s" % (its, Pi)
+        return np.array(tmpL - tmpL0)
 
-        for Pj in Pn:
-            # print "Punkt: %s"%Pj.NAME
+    def do_adjustment_2D(self):
+        """
 
-            tmpA = DESIGN.design2D(Pi, Pj)
-            tmpL = np.transpose(np.array([ANGLE.gon2rad(Pj.HZ), Pj.getSH()]))
-            LL0 = GEODETIC.grid_to_polar(Pi, Pj, Pi.ORI)
-            tmpL0 = np.transpose(np.array([ANGLE.gon2rad(LL0['azimut']), LL0['distancePlane']]))
+        """
+        #    ___                  _      _      _       _
+        #   / _ \                | |    (_)    | |     | |
+        #  / /_\ \_   _ ___  __ _| | ___ _  ___| |__   | |     __ _  __ _  ___
+        #  |  _  | | | / __|/ _` | |/ _ \ |/ __| '_ \  | |    / _` |/ _` |/ _ \
+        #  | | | | |_| \__ \ (_| | |  __/ | (__| | | | | |___| (_| | (_| |  __/
+        #  \_| |_/\__,_|___/\__, |_|\___|_|\___|_| |_| \_____/\__,_|\__, |\___|
+        #                    __/ |                                   __/ |
+        #                   |___/                                   |___/
 
-            if FIRST:
-                FIRST = False
-                A = tmpA
-                L = tmpL
-                L0 = tmpL0
-            else:
-                A = np.vstack([A, tmpA])
-                L = np.hstack([L, tmpL])
-                L0 = np.hstack([L0, tmpL0])
+        logger.debug("Adjustment PLANE")
+        s02 = self.s02_apr
+        for its in range(self.iterations):
 
-        # Verkürzten Beobachtungsvektor
-        l = np.transpose(np.array([L - L0]))
+            """Bestimmung der Varianzmatrix"""
+            sigVektor = [self.sigma_horizontal_angle ** 2, self.sigma_slope_distance ** 2]
+            p = len(sigVektor)  # Anzahl der unterschiedlichen Beobachtungen
+            Sll = np.mat(np.eye(len(self.target_list) * p))
+            for k in range(len(self.target_list)):
+                for q in range(p):
+                    Sll[k * p + q, k * p + q] = sigVektor[q]
 
-        # print "L:\n",np.transpose([L])
+            # P = np.eye(len(Pn) * 2)
+            P = scipy.linalg.inv(s02 * Sll)
 
-        x = normalgleichung(A, P, l)
+            FIRST = True
+            # print "%d: %s" % (its, Pi)
 
-        xx = x[0]
-        vv = x[1]
-        Qxx = x[2]
-        Qll = x[3]
-        Qlld = x[4]
-        HP = x[7]
-        # ...
-        s02p = float(x[6])
+            a = None
+            l = None
 
-#         if math.fabs(HP)<5e-4 and math.fabs(HP)>1e8:
-#             print "Verprobung nach %d Durchläufen OK"%its
-#             its = ITERATIONS
-        #s02 = s02p
+            for ti in self.target_list:
+                ai = design.design2D(self.station, ti)
+                li = self.get_li(target=ti)
 
-        if debug_mode:
-            print "x:\n", xx
-            print "v:",
-            for m in range(len(vv)):
-                print "%10.1f [%s]" % (np.sqrt(vv[m]) * np.sqrt(s02p) * 1e3, 'cgon' if m == 2 else 'mm')
-            print "L:\n", L
-            print "L0:\n", L0
-            print "l:\n", l
-            print "A:\n", A
-            print "P:\n", P
-            print "\ns0:\n%e" % np.sqrt(s02p)
-            print "\nQxx:"
-            for m in range(len(Qxx)):
-                print "%10.1f [%s]" % (np.sqrt(Qxx[m, m]) * np.sqrt(s02p) * 1e3, 'cgon' if m == 2 else 'mm')
-            print "\nQlld:"
-            for m in range(len(Qlld)):
-                print "%10.1f [%s]" % (np.sqrt(Qlld[m, m]) * np.sqrt(s02p) * 1e3, 'cgon' if m % 2 != 0 else 'mm')
-            print "\nQll:"
-            for m in range(len(Qll)):
-                print "%10.1f" % (np.sqrt(Qll[m, m] / s02p))
+                if a is None or l is None:
+                    a = ai
+                    l = li
+                else:
+                    a = np.vstack([a, ai])
+                    l = np.vstack([l, li])
 
-        Pi.X += xx[0]
-        Pi.Y += xx[1]
-        Pi.ORI += ANGLE.rad2gon(xx[2])
-        Pi.ORI = ANGLE.corr_hz(angle=-1 * Pi.ORI)
-        its += 1
+            # print "L:\n",np.transpose([L])
 
-        Pi.sigmaEasting = np.sqrt(Qxx[0, 0] * np.sqrt(s02p))
-        Pi.sigmaNorthing = np.sqrt(Qxx[1, 1] * np.sqrt(s02p))
-        Pi.sigmaOrientation = np.sqrt(Qxx[2, 2] * np.sqrt(s02p))
+            x = normalgleichung(a, P, l)
 
-#    ___                  _      _      _       _   _ _   _ _
-#   / _ \                | |    (_)    | |     | | | (_) (_) |
-#  / /_\ \_   _ ___  __ _| | ___ _  ___| |__   | |_| | ___ | |__   ___
-#  |  _  | | | / __|/ _` | |/ _ \ |/ __| '_ \  |  _  |/ _ \| '_ \ / _ \
-#  | | | | |_| \__ \ (_| | |  __/ | (__| | | | | | | | (_) | | | |  __/
-#  \_| |_/\__,_|___/\__, |_|\___|_|\___|_| |_| \_| |_/\___/|_| |_|\___|
-#                    __/ |
-#                   |___/
+            xx = x[0]
+            vv = x[1]
+            Qxx = x[2]
+            Qll = x[3]
+            Qlld = x[4]
+            HP = x[7]
+            # ...
+            s02p = float(x[6])
 
-    if debug_mode:
-        print """.. Ausgleich Hoehe .."""
+            # if math.fabs(HP)<5e-4 and math.fabs(HP)>1e8:
+            #     print "Verprobung nach %d Durchläufen OK"%its
+            #    its = ITERATIONS
+            # s02 = s02p
 
-#     vv = np.zeros([len(Pn)*2,1])
-    its = 0
-    while its < iterations:
+            # if False:
+            #     print "x:\n", xx
+            #     print "v:",
+            #     for m in range(len(vv)):
+            #         print "%10.1f [%s]" % (np.sqrt(vv[m]) * np.sqrt(s02p) * 1e3, 'cgon' if m == 2 else 'mm')
+            #     print "L:\n", L
+            #     print "L0:\n", L0
+            #     print "l:\n", l
+            #     print "A:\n", A
+            #     print "P:\n", P
+            #     print "\ns0:\n%e" % np.sqrt(s02p)
+            #     print "\nQxx:"
+            #     for m in range(len(Qxx)):
+            #         print "%10.1f [%s]" % (np.sqrt(Qxx[m, m]) * np.sqrt(s02p) * 1e3, 'cgon' if m == 2 else 'mm')
+            #     print "\nQlld:"
+            #     for m in range(len(Qlld)):
+            #         print "%10.1f [%s]" % (np.sqrt(Qlld[m, m]) * np.sqrt(s02p) * 1e3, 'cgon' if m % 2 != 0 else 'mm')
+            #     print "\nQll:"
+            #     for m in range(len(Qll)):
+            #         print "%10.1f" % (np.sqrt(Qll[m, m] / s02p))
 
-        its += 1
+            self.station.x += xx[0]
+            self.station.y += xx[1]
+            self.orientation.value += convert.rad2gon(xx[2])
+            self.orientation.value = convert.corr_hz(angle=-1 * self.orientation.value)
+            self.sigma_easting = np.sqrt(Qxx[0, 0] * np.sqrt(s02p))
+            self.sigma_northing = np.sqrt(Qxx[1, 1] * np.sqrt(s02p))
+            self.sigma_orientation = np.sqrt(Qxx[2, 2] * np.sqrt(s02p))
 
-        """Bestimmung der Varianzmatrix"""
-        sigVektor = [sig_V ** 2]
-        p = len(sigVektor)  # Anzahl der unterschiedlichen Beobachtungen
-        Sll = np.mat(np.eye(n * p))
-        for k in range(len(Pn)):
-            for q in range(p):
-                Sll[k * p + q, k * p + q] = sigVektor[q]
+    def do_adjust_1D(self):
+        """
+        """
+    #    ___                  _      _      _       _   _ _   _ _
+    #   / _ \                | |    (_)    | |     | | | (_) (_) |
+    #  / /_\ \_   _ ___  __ _| | ___ _  ___| |__   | |_| | ___ | |__   ___
+    #  |  _  | | | / __|/ _` | |/ _ \ |/ __| '_ \  |  _  |/ _ \| '_ \ / _ \
+    #  | | | | |_| \__ \ (_| | |  __/ | (__| | | | | | | | (_) | | | |  __/
+    #  \_| |_/\__,_|___/\__, |_|\___|_|\___|_| |_| \_| |_/\___/|_| |_|\___|
+    #                    __/ |
+    #                   |___/
 
-        P = np.eye(len(Pn) * 2)
-        P = scipy.linalg.inv(s02 * Sll)
+        logger.debug(""".. Ausgleich Hoehe ..""")
+        its = 0
+        for its in range(self.iterations):
 
-        FIRST = True
+            """Bestimmung der Varianzmatrix"""
+            sigVektor = [self.sigma_vertical_angle ** 2]
+            p = len(sigVektor)  # Anzahl der unterschiedlichen Beobachtungen
+            Sll = np.mat(np.eye(len(self.target_list) * p))
+            for k in range(len(self.target_list)):
+                for q in range(p):
+                    Sll[k * p + q, k * p + q] = sigVektor[q]
 
-        # Designmatrix
+            P = np.eye(len(self.target_list) * 2)
+            P = scipy.linalg.inv(self.s02_apr * Sll)
 
-        for Pj in Pn:
-            tmpA = DESIGN.design1D(Pi, Pj)
-            tmpL = np.transpose(np.array([ANGLE.gon2rad(Pj.V)]))
-            LL0 = GEODETIC.grid_to_polar(Pi, Pj, Pi.ORI)
-            tmpL0 = np.transpose(np.array([ANGLE.gon2rad(LL0['zenit'])]))
+            FIRST = True
 
-            if FIRST:
-                FIRST = False
-                A = tmpA
-                L = tmpL
-                L0 = tmpL0
-            else:
-                A = np.vstack([A, tmpA])
-                L = np.hstack([L, tmpL])
-                L0 = np.hstack([L0, tmpL0])
+            # Normalgleichung
+            x = normalgleichung(self.__a, P, self.__l)
 
-        # Verkürzten Beobachtungsvektor
-        l = np.transpose(np.array([L - L0]))
+            xx = x[0]
+            vv = x[1]
+            Qxx = x[2]
+            Qll = x[3]
+            Qlld = x[4]
+            HP = x[7]
+            # ...
+            s02p = float(x[6])
 
-        # Normalgleichung
-        x = normalgleichung(A, P, l)
+            self.station.z += xx[0]
+            self.station.sigmaHeight = np.sqrt(Qxx[0, 0] * np.sqrt(s02p))
 
-        xx = x[0]
-        vv = x[1]
-        Qxx = x[2]
-        Qll = x[3]
-        Qlld = x[4]
-        HP = x[7]
-        # ...
-        s02p = float(x[6])
+            # if debug_mode:
+            #     print "x:\n", xx
+            #     print "v:",
+            #     for m in range(len(vv)):
+            #         print "%10.1f [%s]" % (np.sqrt(vv[m]) * np.sqrt(s02p) * 1e3, 'cgon' if m == 2 else 'mm')
+            #     print "L:\n", L
+            #     print "L0:\n", L0
+            #     print "l:\n", l
+            #     print "A:\n", A
+            #     print "P:\n", P
+            #     print "\ns0:\n%e" % np.sqrt(s02p)
+            #     print "\nQxx:"
+            #     for m in range(len(Qxx)):
+            #         print "%10.1f [%s]" % (np.sqrt(Qxx[m, m]) * np.sqrt(s02p) * 1e3, 'cgon' if m == 2 else 'mm')
+            #     print "\nQlld:"
+            #     for m in range(len(Qlld)):
+            #         print "%10.1f [%s]" % (np.sqrt(Qlld[m, m]) * np.sqrt(s02p) * 1e3, 'cgon' if m % 2 != 0 else 'mm')
 
-        Pi.Z += xx[0]
-        Pi.sigmaHeight = np.sqrt(Qxx[0, 0] * np.sqrt(s02p))
 
-        if debug_mode:
-            print "x:\n", xx
-            print "v:",
-            for m in range(len(vv)):
-                print "%10.1f [%s]" % (np.sqrt(vv[m]) * np.sqrt(s02p) * 1e3, 'cgon' if m == 2 else 'mm')
-            print "L:\n", L
-            print "L0:\n", L0
-            print "l:\n", l
-            print "A:\n", A
-            print "P:\n", P
-            print "\ns0:\n%e" % np.sqrt(s02p)
-            print "\nQxx:"
-            for m in range(len(Qxx)):
-                print "%10.1f [%s]" % (np.sqrt(Qxx[m, m]) * np.sqrt(s02p) * 1e3, 'cgon' if m == 2 else 'mm')
-            print "\nQlld:"
-            for m in range(len(Qlld)):
-                print "%10.1f [%s]" % (np.sqrt(Qlld[m, m]) * np.sqrt(s02p) * 1e3, 'cgon' if m % 2 != 0 else 'mm')
-
-    if debug_mode:
-        print ".. Ausgleich abgeschlossen .."
-        print "\nPi   =   dimosy.%s\n" % Pi
-
-    return Pi
+    def get_station(self):
+        return self.station
