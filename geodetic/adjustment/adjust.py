@@ -33,8 +33,8 @@ class Adjustment(object):
         self.sigma_slope_distance=None,
         self.itsmax=100,
         self.SLLFIX=True,
-        self.__a
-        self.__l
+        self.__a = None
+        self.__l = None
         self.iterations=20,
         self.ASSIGN=False,
         self.PATH='',
