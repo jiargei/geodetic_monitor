@@ -1,7 +1,8 @@
 import unittest
 import logging
-from point import Point
+from point import Point, MeasuredPoint, Station
 from calculations.transformation import Helmert2DTransformation
+from calculations.resection import Resection
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -87,5 +88,38 @@ class TransformationTestCase(unittest.TestCase):
         p0 = new_points[0]
         p1 = p0["to"]
         n = (self.points_to[0]+self.addition-p1).norm()
-        logger.info("diff: %f" % n)
-        self.assertTrue(n<1e-3)
+        logger.info("diff: %.4f" % n)
+        self.assertTrue(n < 1e-3)
+
+
+class ResectionTestCase(unittest.TestCase):
+    """
+
+    """
+    def setUp(self):
+        self.target_list = []
+        station_name = '16-03-31.074'
+
+        self.target_list.append(MeasuredPoint(
+            27.485, 3.090, 1.021, station_name, '9001', 258.7195, 104.3508, 11.226
+        ))
+        self.target_list.append(MeasuredPoint(
+            21.753, 7.791, 1.432, station_name, '9002', 223.0525, 104.4693, 5.081
+        ))
+        self.target_list.append(MeasuredPoint(
+            13.382, 6.085, 1.298, station_name, '9003', 29.9477, 108.9109, 3.516
+        ))
+        # self.target_list.append(MeasuredPoint(
+        #     None, None, 0.19, station_name, 'H1', 96.9081, 125.1134, 4.158
+        # ))
+        self.correct_result = Station(station_name, 16.835, 6.561, 1.788, ori=261.3388)
+
+    def test_resection(self):
+        resection = Resection(target_list=self.target_list)
+        resection.calculate()
+
+        logger.debug(u"Check coordinate")
+        self.assertAlmostEqual((self.correct_result-resection.station).norm(), Point().norm(), places=4)
+
+        logger.debug(u"Check orientation")
+        self.assertAlmostEqual(self.correct_result.ori, resection.station.ori, places=5)

@@ -3,10 +3,11 @@
 
 import logging
 from abc import ABCMeta, abstractmethod
+
 import numpy as np
 
+from geodetic.calculations.adjustment import normalgleichung
 from ..point import Point
-from ..adjustment.normalgleichung import normalgleichung
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

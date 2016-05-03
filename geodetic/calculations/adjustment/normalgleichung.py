@@ -20,8 +20,8 @@ def covariance2(n, wR, ws, wz, l):
     """
     SLL = scipy.mat(scipy.eye(n * 3))
     for i in range(n):
-    # SLL[3*i  ,3*i  ] = SLL[3*i  ,3*i  ]*(wR)**1                  # Hz
-    # SLL[3*i+1,3*i+1] = SLL[3*i+1,3*i+1]*(wz)**1                  # V
+        # SLL[3*i  ,3*i  ] = SLL[3*i  ,3*i  ]*(wR)**1  # Hz
+        # SLL[3*i+1,3*i+1] = SLL[3*i+1,3*i+1]*(wz)**1  # V
         SLL[3 * i + 2, 3 * i + 2] *= (ws + 2 * l[3 * i] * 1e-06) ** 2  # Sd
     return SLL
 
@@ -78,7 +78,7 @@ def normalgleichung(A, P, l):
     #Qlld = scipy.dot(UPPER)
     Qlld = scipy.dot(scipy.dot(A, Qxx), AT)
     Qvv = Qll - Qlld
-#     rr   = scipy.array([float(scipy.sqrt(scipy.diag(Qvv)[i])) for i in range(len(vv))])
+    # rr   = scipy.array([float(scipy.sqrt(scipy.diag(Qvv)[i])) for i in range(len(vv))])
 
     """Verprobung"""
     vTPv = scipy.dot(scipy.dot(scipy.transpose(vv), P), vv)

@@ -24,3 +24,5 @@ six>=1.10.0
 python-logstash>=0.4.6
 django-import-export>=0.4.5
 django-polymorphic
+scipy
+numpy

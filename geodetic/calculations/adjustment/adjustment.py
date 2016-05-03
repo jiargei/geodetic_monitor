@@ -1,25 +1,266 @@
 #!/bin/python
 # -*- coding: utf-8 -*-
 
-import scipy as np
-import scipy.linalg
 import logging
+from abc import ABCMeta, abstractmethod, abstractproperty
 
+import scipy
+
+from geodetic.calculations import convert
+from geodetic.calculations.polar import grid_to_polar
+from geodetic.calculations.transformation import Helmert2DTransformation
+from geodetic.measurement import TachyMeasurement
+from geodetic.point import MeasuredPoint, Station
 from normalgleichung import normalgleichung
 from . import design
-
-from .. point import Point, MeasuredPoint, Station
-from .. measurement import TachyMeasurement
 from .. adjustment.orientation import Orientation
-from .. calculations.transformation import Helmert2DTransformation
-from .. calculations.polar import grid_to_polar
-from .. calculations import convert
-
 
 logger = logging.getLogger(__name__)
 
 
 class Adjustment(object):
+    __metaclass__ = ABCMeta
+
+    def __init__(self, **kwargs):
+        """
+
+        Args:
+            s02_apr:
+
+        Returns:
+
+        """
+        self.s02_apr = kwargs.get("s02_apr")
+        self.s02 = self.s02_apr
+        self.s02_post = 1.
+        self.use_s02_post = True
+        self.station = kwargs.get("station", Station())
+        self.target_list = []
+        self.iterations = kwargs.get("iterations", 20)
+        self.__a = None
+        self.__l = None
+
+    def clear_a(self):
+        self.__a = None
+
+    def add_target(self, t):
+        assert isinstance(t, self.get_target_class())
+        self.target_list.append(t)
+
+    def calculate_post(self):
+        pass
+
+    def calculate(self):
+        """
+
+        Returns:
+
+        """
+        assert self.can_calculate()
+        
+        for iteration in range(self.iterations):
+            self.clear_a()
+            for ti in self.target_list:
+                ai = self.get_ai(ti)
+                li = self.get_li(ti)
+                self.add_equation(ai, li)
+    
+            x = normalgleichung(self.__a, self.get_p(), self.__l)
+            xx = x[0]
+            vv = x[1]
+            Qxx = x[2]
+            Qll = x[3]
+            Qlld = x[4]
+            HP = x[7]
+
+            self.s02_post = float(x[6])
+            if self.use_s02_post:
+                self.s02 = self.s02_post
+
+            self.add_xx(xx)
+            if not self.is_relevant(xx):
+                continue
+
+        self.calculate_post()
+
+    def add_equation(self, ai, li):
+        """
+
+        Args:
+            ai:
+            li:
+
+        Returns:
+
+        """
+        a = self.__a
+        l = self.__l
+
+        if a is None or l is None:
+            a = ai
+            l = li
+        else:
+            a = scipy.vstack([a, ai])
+            l = scipy.vstack([l, li])
+
+        self.__a = a
+        self.__l = l
+
+    @abstractproperty
+    def get_target_class(self):
+        pass
+
+    @abstractmethod
+    def is_relevant(self, xx):
+        pass
+
+    @abstractmethod
+    def add_xx(self, xx):
+        pass
+
+    @abstractmethod
+    def get_p(self):
+        pass
+
+    @abstractmethod
+    def get_li(self, t):
+        pass
+
+    @abstractmethod
+    def get_ai(self, t):
+        pass
+
+    @abstractmethod
+    def can_calculate(self):
+        pass
+
+    @abstractmethod
+    def get_approximation(self):
+        pass
+
+
+class Adjustment1D(Adjustment):
+    """
+    Adjustment for height
+    """
+    def __init__(self, **kwargs):
+        super(Adjustment1D, self).__init__(**kwargs)
+        self.sigma_vertical_angle = kwargs.get("sigma_vertical_angle", 10e-4)
+
+    def get_target_class(self):
+        return MeasuredPoint
+
+    def add_xx(self, xx):
+        self.station.z += xx[0]
+
+    def get_p(self):
+        sigma_vector = [self.sigma_vertical_angle ** 2]
+        p = len(sigma_vector)  # Anzahl der unterschiedlichen Beobachtungen
+        sll = scipy.mat(scipy.eye(len(self.target_list) * p))
+        for k in range(len(self.target_list)):
+            for q in range(p):
+                sll[k * p + q, k * p + q] = sigma_vector[q]
+
+        # return scipy.eye(len(Pn) * 2)
+        return scipy.linalg.inv(self.s02 * sll)
+
+    def get_li(self, t):
+        tli = scipy.transpose(scipy.array([convert.gon2rad(t.vertical_angle)]))
+        ll0 = grid_to_polar(self.station, t)
+        tl0 = scipy.transpose(scipy.array([convert.gon2rad(ll0['zenit'])]))
+        return scipy.transpose(scipy.array([tli - tl0]))
+
+    def is_relevant(self, xx):
+        return float(xx[0] > 5e-4)
+
+    def get_ai(self, t):
+        return design.design_1d(self.station, target=t)
+
+    def can_calculate(self):
+        return len(self.target_list) >= 1
+
+    def get_approximation(self):
+        self.station.z = sum(map(lambda t: t.z, self.target_list)) / len(self.target_list)
+
+
+class Adjustment2D(Adjustment):
+    """
+    Adjustment for easting and northing
+    """
+
+    def __init__(self, **kwargs):
+        super(Adjustment2D, self).__init__(**kwargs)
+        self.sigma_vertical_angle = kwargs.get("sigma_vertical_angle", 10e-4)
+        self.sigma_horizontal_angle = kwargs.get("sigma_horizontal_angle", 10e-4)
+        self.sigma_slope_distance = kwargs.get("sigma_slope_distance", 3e-3)
+        self.orientation = Orientation()
+
+    def get_target_class(self):
+        return MeasuredPoint
+
+    def add_xx(self, xx):
+        self.station.x += xx[0]
+        self.station.y += xx[1]
+        self.orientation.value += convert.rad2gon(xx[2])
+        self.orientation.value = convert.corr_hz(angle=-1 * self.orientation.value)
+
+    def get_p(self):
+        return scipy.eye(len(self.target_list))
+
+    def get_li(self, t):
+        tli = scipy.transpose(scipy.array([convert.gon2rad(t.horizontal_angle), t.get_slope_distance()]))
+        ll0 = grid_to_polar(self.station, t, self.orientation)
+        tl0 = scipy.transpose(scipy.array([convert.gon2rad(ll0['azimut']), ll0['distancePlane']]))
+        return scipy.transpose(scipy.array([tli - tl0]))
+
+    def get_ai(self, t):
+        return design.design_2d(self.station, t)
+
+    def can_calculate(self):
+        return len(self.target_list) >= 2
+
+    def do_orientation(self):
+        """
+        Determine Orientation
+        """
+        logger.debug("Calculate Orientation")
+        ori = Orientation()
+        for ti in self.target_list:
+            ori.add_angle_pair(tk=grid_to_polar(self.station, ti),
+                               rk=ti.horizontal_angle)
+        ori.calculate()
+        logger.debug(ori.get())
+        self.orientation = ori.value
+
+    def calculate_post(self):
+        ori_old = self.orientation.value
+        self.do_orientation()
+        ori_new = self.orientation.value
+        d_ori = ori_new - ori_old
+        logger.debug("Orientation Adjustment: %.4f" % ori_old)
+        logger.debug("Orientation Classic: %.4f" % ori_new)
+
+    def get_approximation(self):
+        h2d = Helmert2DTransformation()
+
+        for tig in self.target_list:
+            ml = TachyMeasurement(tig.horizontal_angle, tig.vertical_angle, tig.slope_distance, tig.target_height)
+            til = ml.to_grid()
+            h2d.add_ident_pair(til, tig)
+
+        h2d.calculate()
+        self.station.x = h2d.translation.x
+        self.station.y = h2d.translation.y
+        self.station.z = sum(map(lambda t: t.z, self.target_list)) / len(self.target_list)
+
+        self.do_orientation()
+
+    def is_relevant(self, xx):
+        return float(xx[0]) >= 5e-4 and \
+               float(xx[1]) >= 5e-4
+
+
+class AdjustmentOld(object):
     """
 
     """
@@ -28,30 +269,30 @@ class Adjustment(object):
         self.station = station
         self.target_list = target_list
         self.orientation = orientation
-        self.sigma_horizontal_angle=None
-        self.sigma_vertical_angle=None
-        self.sigma_slope_distance=None,
-        self.itsmax=100,
-        self.SLLFIX=True,
+        self.sigma_horizontal_angle = 10e-4
+        self.sigma_vertical_angle = 10e-4
+        self.sigma_slope_distance = 3e-3
+        self.itsmax = 100
+        self.SLLFIX = True
         self.__a = None
         self.__l = None
-        self.iterations=20,
-        self.ASSIGN=False,
-        self.PATH='',
-        self.FILE='',
-        self.s02_apr=1,
-        self.calculate_approximation=True
+        self.iterations = 20
+        self.ASSIGN = False
+        self.PATH = ''
+        self.FILE = ''
+        self.s02_apr = 1
+        self.calculate_approximation = True
     """
     **DiMoSy Berechnungen - Freie Stationierung**
 
     Diese Routine berechnet die Koordinaten eines Standpunktes, bezogen auf die
     eingegebene Punktliste
 
-    ``P = np.concatenate((P,[[Xi, Yi, Zi]]))``
+    ``P = scipy.concatenate((P,[[Xi, Yi, Zi]]))``
 
     und deren korrespondierenden Beobachtungen vom unbekannten Standpunkt
 
-    ``L = np.concatenate((L,[[Sdi, ohr(Hzi), ohr(Vi)]]))``
+    ``L = scipy.concatenate((L,[[Sdi, ohr(Hzi), ohr(Vi)]]))``
 
     Bei der Eingabe das Schema beachten, die Strecken und Koordinaten in
     Einheiten [m], und die Winkelbeobachtungen in Einheiten [gon]. Eingangs
@@ -167,7 +408,7 @@ class Adjustment(object):
         h2d.calculate()
         self.station.x = h2d.translation.x
         self.station.y = h2d.translation.y
-        self.station.z = sum(map(lambda t: t.z, self.target_list)) / len(self.target_list)
+        # self.station.z = sum(map(lambda t: t.z, self.target_list)) / len(self.target_list)
 
     def do_orientation(self):
         """
@@ -182,12 +423,12 @@ class Adjustment(object):
         logger.debug(ori.get())
         self.orientation = ori.value
 
-    # Pi.ORI = ANGLE.corr_hz(ori["orientation"])
-    # t104_113 = np.arctan((Pn[2].X - Pn[1].X)/(Pn[2].Y-Pn[1].Y))
-    # D104_113 = Pn[1].dist_plane(Pn[2])
-    # t104_108 = t104_113 - np.arccos( (D104_113**2 + Pn[1].SD**2 - Pn[2].SD**2)/(2*Pn[1].SD*D104_113) )
-    # Pi.X = Pn[1].X + Pn[1].SD*np.sin(t104_108)
-    # Pi.Y = Pn[1].Y + Pn[1].SD*np.cos(t104_108)
+        # Pi.ORI = ANGLE.corr_hz(ori["orientation"])
+        # t104_113 = scipy.arctan((Pn[2].X - Pn[1].X)/(Pn[2].Y-Pn[1].Y))
+        # D104_113 = Pn[1].dist_plane(Pn[2])
+        # t104_108 = t104_113 - scipy.arccos( (D104_113**2 + Pn[1].SD**2 - Pn[2].SD**2)/(2*Pn[1].SD*D104_113) )
+        # Pi.X = Pn[1].X + Pn[1].SD*scipy.sin(t104_108)
+        # Pi.Y = Pn[1].Y + Pn[1].SD*scipy.cos(t104_108)
 
     def get_li(self, target):
         """
@@ -199,16 +440,16 @@ class Adjustment(object):
 
         """
 
-        tmpL = np.transpose(np.array([convert.gon2rad(target.horizontal_angle),
+        tmpL = scipy.transpose(scipy.array([convert.gon2rad(target.horizontal_angle),
                                       target.get_slope_distance()
                                       ]
                                      )
                             )
         LL0 = grid_to_polar(self.station, target, self.orientation)
-        tmpL0 = np.transpose(np.array([convert.gon2rad(LL0['azimut']),
+        tmpL0 = scipy.transpose(scipy.array([convert.gon2rad(LL0['azimut']),
                                        LL0['distancePlane']]))
 
-        return np.array(tmpL - tmpL0)
+        return scipy.array(tmpL - tmpL0)
 
     def do_adjustment_2D(self):
         """
@@ -230,12 +471,12 @@ class Adjustment(object):
             """Bestimmung der Varianzmatrix"""
             sigVektor = [self.sigma_horizontal_angle ** 2, self.sigma_slope_distance ** 2]
             p = len(sigVektor)  # Anzahl der unterschiedlichen Beobachtungen
-            Sll = np.mat(np.eye(len(self.target_list) * p))
+            Sll = scipy.mat(scipy.eye(len(self.target_list) * p))
             for k in range(len(self.target_list)):
                 for q in range(p):
                     Sll[k * p + q, k * p + q] = sigVektor[q]
 
-            # P = np.eye(len(Pn) * 2)
+            # P = scipy.eye(len(Pn) * 2)
             P = scipy.linalg.inv(s02 * Sll)
 
             FIRST = True
@@ -245,17 +486,17 @@ class Adjustment(object):
             l = None
 
             for ti in self.target_list:
-                ai = design.design2D(self.station, ti)
+                ai = design.design_2d(self.station, ti)
                 li = self.get_li(target=ti)
 
                 if a is None or l is None:
                     a = ai
                     l = li
                 else:
-                    a = np.vstack([a, ai])
-                    l = np.vstack([l, li])
+                    a = scipy.vstack([a, ai])
+                    l = scipy.vstack([l, li])
 
-            # print "L:\n",np.transpose([L])
+            # print "L:\n",scipy.transpose([L])
 
             x = normalgleichung(a, P, l)
 
@@ -277,30 +518,30 @@ class Adjustment(object):
             #     print "x:\n", xx
             #     print "v:",
             #     for m in range(len(vv)):
-            #         print "%10.1f [%s]" % (np.sqrt(vv[m]) * np.sqrt(s02p) * 1e3, 'cgon' if m == 2 else 'mm')
+            #         print "%10.1f [%s]" % (scipy.sqrt(vv[m]) * scipy.sqrt(s02p) * 1e3, 'cgon' if m == 2 else 'mm')
             #     print "L:\n", L
             #     print "L0:\n", L0
             #     print "l:\n", l
             #     print "A:\n", A
             #     print "P:\n", P
-            #     print "\ns0:\n%e" % np.sqrt(s02p)
+            #     print "\ns0:\n%e" % scipy.sqrt(s02p)
             #     print "\nQxx:"
             #     for m in range(len(Qxx)):
-            #         print "%10.1f [%s]" % (np.sqrt(Qxx[m, m]) * np.sqrt(s02p) * 1e3, 'cgon' if m == 2 else 'mm')
+            #         print "%10.1f [%s]" % (scipy.sqrt(Qxx[m, m]) * scipy.sqrt(s02p) * 1e3, 'cgon' if m == 2 else 'mm')
             #     print "\nQlld:"
             #     for m in range(len(Qlld)):
-            #         print "%10.1f [%s]" % (np.sqrt(Qlld[m, m]) * np.sqrt(s02p) * 1e3, 'cgon' if m % 2 != 0 else 'mm')
+            #         print "%10.1f [%s]" % (scipy.sqrt(Qlld[m, m]) * scipy.sqrt(s02p) * 1e3, 'cgon' if m % 2 != 0 else 'mm')
             #     print "\nQll:"
             #     for m in range(len(Qll)):
-            #         print "%10.1f" % (np.sqrt(Qll[m, m] / s02p))
+            #         print "%10.1f" % (scipy.sqrt(Qll[m, m] / s02p))
 
             self.station.x += xx[0]
             self.station.y += xx[1]
             self.orientation.value += convert.rad2gon(xx[2])
             self.orientation.value = convert.corr_hz(angle=-1 * self.orientation.value)
-            self.sigma_easting = np.sqrt(Qxx[0, 0] * np.sqrt(s02p))
-            self.sigma_northing = np.sqrt(Qxx[1, 1] * np.sqrt(s02p))
-            self.sigma_orientation = np.sqrt(Qxx[2, 2] * np.sqrt(s02p))
+            self.sigma_easting = scipy.sqrt(Qxx[0, 0] * scipy.sqrt(s02p))
+            self.sigma_northing = scipy.sqrt(Qxx[1, 1] * scipy.sqrt(s02p))
+            self.sigma_orientation = scipy.sqrt(Qxx[2, 2] * scipy.sqrt(s02p))
 
     def do_adjust_1D(self):
         """
@@ -321,15 +562,13 @@ class Adjustment(object):
             """Bestimmung der Varianzmatrix"""
             sigVektor = [self.sigma_vertical_angle ** 2]
             p = len(sigVektor)  # Anzahl der unterschiedlichen Beobachtungen
-            Sll = np.mat(np.eye(len(self.target_list) * p))
+            Sll = scipy.mat(scipy.eye(len(self.target_list) * p))
             for k in range(len(self.target_list)):
                 for q in range(p):
                     Sll[k * p + q, k * p + q] = sigVektor[q]
 
-            P = np.eye(len(self.target_list) * 2)
+            P = scipy.eye(len(self.target_list) * 2)
             P = scipy.linalg.inv(self.s02_apr * Sll)
-
-            FIRST = True
 
             # Normalgleichung
             x = normalgleichung(self.__a, P, self.__l)
@@ -344,25 +583,25 @@ class Adjustment(object):
             s02p = float(x[6])
 
             self.station.z += xx[0]
-            self.station.sigmaHeight = np.sqrt(Qxx[0, 0] * np.sqrt(s02p))
+            self.station.sigmaHeight = scipy.sqrt(Qxx[0, 0] * scipy.sqrt(s02p))
 
             # if debug_mode:
             #     print "x:\n", xx
             #     print "v:",
             #     for m in range(len(vv)):
-            #         print "%10.1f [%s]" % (np.sqrt(vv[m]) * np.sqrt(s02p) * 1e3, 'cgon' if m == 2 else 'mm')
+            #         print "%10.1f [%s]" % (scipy.sqrt(vv[m]) * scipy.sqrt(s02p) * 1e3, 'cgon' if m == 2 else 'mm')
             #     print "L:\n", L
             #     print "L0:\n", L0
             #     print "l:\n", l
             #     print "A:\n", A
             #     print "P:\n", P
-            #     print "\ns0:\n%e" % np.sqrt(s02p)
+            #     print "\ns0:\n%e" % scipy.sqrt(s02p)
             #     print "\nQxx:"
             #     for m in range(len(Qxx)):
-            #         print "%10.1f [%s]" % (np.sqrt(Qxx[m, m]) * np.sqrt(s02p) * 1e3, 'cgon' if m == 2 else 'mm')
+            #         print "%10.1f [%s]" % (scipy.sqrt(Qxx[m, m]) * scipy.sqrt(s02p) * 1e3, 'cgon' if m == 2 else 'mm')
             #     print "\nQlld:"
             #     for m in range(len(Qlld)):
-            #         print "%10.1f [%s]" % (np.sqrt(Qlld[m, m]) * np.sqrt(s02p) * 1e3, 'cgon' if m % 2 != 0 else 'mm')
+            #         print "%10.1f [%s]" % (scipy.sqrt(Qlld[m, m]) * scipy.sqrt(s02p) * 1e3, 'cgon' if m % 2 != 0 else 'mm')
 
 
     def get_station(self):
