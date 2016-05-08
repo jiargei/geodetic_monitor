@@ -1,17 +1,24 @@
 import traceback
 import math
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Orientation(object):
     """
 
     """
-    def __init__(self):
-        self.value = 0.
-        self.sigma = 0.
+    def __init__(self, **kwargs):
+        self.value = kwargs.get("value", 0.)
+        self.sigma = kwargs.get("sigma", 0.)
         self.__t = []
         self.__r = []
         self.__is_set = False
+
+    def __sub__(self, other):
+        assert isinstance(other, Orientation)
+        return Orientation(value=self.value - other.value)
 
     def is_set(self):
         return self.__is_set
@@ -27,6 +34,7 @@ class Orientation(object):
 
     def calculate(self):
         assert self.can_calculate()
+
         ori_list = map(lambda t, r: t - r, self.__t, self.__r)
         ori = sum(ori_list)/len(ori_list)
         variance_list = map(lambda o: (o - ori)**2, ori_list)

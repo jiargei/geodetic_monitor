@@ -64,8 +64,14 @@ class Adjustment(object):
                 ai = self.get_ai(ti)
                 li = self.get_li(ti)
                 self.add_equation(ai, li)
-    
-            x = normalgleichung(self.__a, self.get_p(), self.__l)
+
+            p = self.get_p()
+
+            logger.debug(self.__a.shape)
+            logger.debug(p.shape)
+            logger.debug(self.__l.shape)
+
+            x = normalgleichung(self.__a, p, self.__l)
             xx = x[0]
             vv = x[1]
             Qxx = x[2]
@@ -162,7 +168,8 @@ class Adjustment1D(Adjustment):
                 sll[k * p + q, k * p + q] = sigma_vector[q]
 
         # return scipy.eye(len(Pn) * 2)
-        return scipy.linalg.inv(self.s02 * sll)
+        # return scipy.linalg.inv(self.s02 * sll)
+        return scipy.eye(len(self.target_list))
 
     def get_li(self, t):
         tli = scipy.transpose(scipy.array([convert.gon2rad(t.vertical_angle)]))
@@ -205,7 +212,7 @@ class Adjustment2D(Adjustment):
         self.orientation.value = convert.corr_hz(angle=-1 * self.orientation.value)
 
     def get_p(self):
-        return scipy.eye(len(self.target_list))
+        return scipy.eye(len(self.target_list)*2)
 
     def get_li(self, t):
         tli = scipy.transpose(scipy.array([convert.gon2rad(t.horizontal_angle), t.get_slope_distance()]))
@@ -226,19 +233,19 @@ class Adjustment2D(Adjustment):
         logger.debug("Calculate Orientation")
         ori = Orientation()
         for ti in self.target_list:
-            ori.add_angle_pair(tk=grid_to_polar(self.station, ti),
+            ori.add_angle_pair(tk=grid_to_polar(self.station, ti)["azimut"],
                                rk=ti.horizontal_angle)
         ori.calculate()
         logger.debug(ori.get())
-        self.orientation = ori.value
+        self.orientation = ori
 
     def calculate_post(self):
-        ori_old = self.orientation.value
+        ori_old = self.orientation
         self.do_orientation()
-        ori_new = self.orientation.value
-        d_ori = ori_new - ori_old
-        logger.debug("Orientation Adjustment: %.4f" % ori_old)
-        logger.debug("Orientation Classic: %.4f" % ori_new)
+        ori_new = self.orientation
+        # d_ori = ori_new - ori_old
+        logger.debug("Orientation Adjustment: %.4f" % ori_old.value)
+        logger.debug("Orientation Classic: %.4f" % ori_new.value)
 
     def get_approximation(self):
         h2d = Helmert2DTransformation()

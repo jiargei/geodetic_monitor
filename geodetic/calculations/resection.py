@@ -16,7 +16,7 @@ class Resection(object):
 
         """
         self.station = kwargs.get("station", Point())
-        self.target_list = []
+        self.target_list = kwargs.get("target_list", [])
         self.__is_set = False
 
     def add_target(self, t):

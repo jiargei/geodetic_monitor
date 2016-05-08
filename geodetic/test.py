@@ -118,8 +118,8 @@ class ResectionTestCase(unittest.TestCase):
         resection = Resection(target_list=self.target_list)
         resection.calculate()
 
-        logger.debug(u"Check coordinate")
+        logger.info(u"Check coordinate")
         self.assertAlmostEqual((self.correct_result-resection.station).norm(), Point().norm(), places=4)
 
-        logger.debug(u"Check orientation")
+        logger.info(u"Check orientation")
         self.assertAlmostEqual(self.correct_result.ori, resection.station.ori, places=5)
