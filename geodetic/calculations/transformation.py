@@ -6,7 +6,8 @@ from abc import ABCMeta, abstractmethod
 
 import numpy as np
 
-from geodetic.calculations.adjustment import normalgleichung
+from geodetic.calculations.adjustment.normalgleichung import normalgleichung
+from geodetic.calculations import polar
 from ..point import Point
 
 logging.basicConfig(level=logging.INFO)
@@ -51,6 +52,10 @@ class Transformation(object):
                 "to": self.transform_point(p)
             })
         return lpl
+
+    @abstractmethod
+    def __str__(self):
+        pass
 
     @abstractmethod
     def get_parameters(self):
@@ -110,14 +115,20 @@ class Helmert2DTransformation(Transformation):
     """
     def __init__(self):
         super(Helmert2DTransformation, self).__init__()
-        self.__ident_from = []
-        self.__ident_to = []
+        self.__ident = {
+            "from": [],
+            "to": [],
+            "counter": 0
+        }
         self.__design_matrix = None
         self.__observation_vector = None
         self.rotation = 0.
         self.scale = 1.
         self.translation = Point(0., 0., 0.)
         self.__addition = Point()
+
+    def __str__(self):
+        return "Translation: %(translation)s, Z-Rotation: %(rotation).5f, Scale: %(scale).6f" % self.get_parameters()
 
     def set_addition(self, x, y):
         self.__addition = Point(x, y)
@@ -130,7 +141,7 @@ class Helmert2DTransformation(Transformation):
         """
         alpha = self.rotation * np.pi / 200.
         r = np.array([
-            [np.cos(alpha), np.sin(alpha)*(-1), 0.],
+            [np.cos(alpha), -np.sin(alpha), 0.],
             [np.sin(alpha), np.cos(alpha), 0.],
             [0., 0., 1.]
         ])
@@ -167,6 +178,10 @@ class Helmert2DTransformation(Transformation):
             r: Rotation
             s: Scale
 
+        :type t: Point
+        :type r: float
+        :type s: float
+
         Returns:
 
         """
@@ -185,10 +200,10 @@ class Helmert2DTransformation(Transformation):
         a = None
         l = None
         assert self.can_calculate()
-        for i in range(len(self.__ident_from)):
+        for i in range(self.__ident["counter"]):
 
-            ai = self.get_ai(self.__ident_from[i])
-            li = self.get_li(self.__ident_to[i])
+            ai = self.get_ai(self.__ident["from"][i])
+            li = self.get_li(self.__ident["to"][i])
 
             if a is None or l is None:
                 a = ai
@@ -202,8 +217,8 @@ class Helmert2DTransformation(Transformation):
 
     @staticmethod
     def get_ai(p):
-        return np.array([[1, 0, p.x, -p.y],
-                         [0, 1, p.y, p.x]])
+        return np.array([[1., 0., p.x, -p.y],
+                         [0., 1., p.y, p.x]])
 
     @staticmethod
     def get_li(p):
@@ -216,7 +231,7 @@ class Helmert2DTransformation(Transformation):
         return {
             'translation': self.translation,
             'scale': self.scale,
-            'rotation': self.rotation,
+            'rotation': polar.convert.rad2gon(self.rotation),
         }
 
     def add_ident_pair(self, p_from, p_to):
@@ -231,12 +246,25 @@ class Helmert2DTransformation(Transformation):
         """
         assert isinstance(p_from, Point)
         assert isinstance(p_to, Point)
-        self.__ident_from.append(p_from - self.__addition)
-        self.__ident_to.append(p_to)
+        self.__ident["from"].append(p_from - self.__addition)
+        self.__ident["to"].append(p_to)
+        self.__ident["counter"] += 1
         return True
 
     def can_calculate(self):
-        return len(self.__ident_from) >= 2 and len(self.__ident_from) == len(self.__ident_to)
+        return self.has_enough_points() and self.has_same_length()
+
+    def has_enough_points(self):
+        test = self.__ident["counter"] >= 2
+        if not test:
+            logger.error("Not enough identical Points")
+        return test
+
+    def has_same_length(self):
+        test = len(self.__ident["from"]) == len(self.__ident["to"])
+        if not test:
+            logger.error("Identical Point lists are not equal")
+        return test
 
     def calculate_parameters(self):
         """
@@ -245,6 +273,7 @@ class Helmert2DTransformation(Transformation):
 
         """
         assert self.can_calculate()
+        assert self.__design_matrix is not None
 
         P = np.eye(self.__design_matrix.shape[0])
 
@@ -254,7 +283,7 @@ class Helmert2DTransformation(Transformation):
         c = float(xx[2])
         d = float(xx[3])
 
-        self.rotation = np.mod(np.arctan2(d, c) * 200. / np.pi, 400.)
+        self.rotation = np.arctan2(d, c)
         self.scale = np.sqrt(c ** 2 + d ** 2)
         self.translation = Point(a, b, 0.)
         self.__is_set = True

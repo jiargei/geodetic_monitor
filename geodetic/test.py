@@ -14,7 +14,11 @@ class TransformationTestCase(unittest.TestCase):
     """
 
     def setUp(self):
-        self.setup_two()
+        self.addition = Point()
+        self.ident_from = []
+        self.ident_to = []
+
+        self.setup_one()
 
     def setup_two(self):
         """
@@ -24,26 +28,32 @@ class TransformationTestCase(unittest.TestCase):
 
         Profile
         P1  5187.6424, 337185.704 => 0.0, 0.0
-        P2  5202.2756, 337182.444 => 14.9199, 0.0
+        P2  5202.2756, 337182.444 => 14.9919, 0.0
 
-        rotation = 1,7899974 rad
-        scale = 1
-        translation = ?
+        rotation = 13.9548 gon
+        scale = 1.000002
+        translation = 5187.463, 337184.074
 
         Returns:
 
         """
-        self.ident_from = []
-        self.ident_to = []
-        self.ident_from.append(Point(5187.6424, 337185.704))
-        self.ident_to.append(Point(0., 0.))
-        self.ident_from.append(Point(5202.2756, 337182.444))
-        self.ident_to.append(Point(14.9199, 0.))
 
-        self.points_from = [Point(5195.093, 337187.746)]
-        self.points_to = [Point(7.722, 0.234)]
-        self.addition = Point(5100, 337100)
-        self.addition = Point()
+        self.correct_result = {
+            "rotation": 13.9548,
+            "scale": 1.000002,
+            "translation": Point(5187.463, 337184.074),
+            "points": [
+                {"from": Point(7.722, 0.234)},
+                {"to": Point(5195.093, 337187.746)},
+            ],
+        }
+
+        self.ident_to.append(Point(5187.6424, 337185.704))
+        self.ident_from.append(Point(0., 0.))
+        self.ident_to.append(Point(5202.2756, 337182.444))
+        self.ident_from.append(Point(14.9919, 0.))
+
+        # self.addition = Point(5200, 337180)
 
     def setup_one(self):
         """
@@ -60,16 +70,21 @@ class TransformationTestCase(unittest.TestCase):
         Returns:
 
         """
-        self.ident_from = []
-        self.ident_to = []
-        self.ident_from.append(Point(402.2956, 195.0549))
-        self.ident_to.append(Point(0., 0.))
-        self.ident_from.append(Point(475.0164, 239.2311))
-        self.ident_to.append(Point(85.0873, 0.))
 
-        self.points_from = [Point(428.5677, 238.1267)]
-        self.points_to = [Point(44.8160, 23.1717)]
-        self.addition = Point()
+        self.correct_result = {
+            "rotation": -34.7530,
+            "scale": 1.,
+            "translation": Point(396.112, 217.143),
+            "points": [
+                {"from": Point(44.8160, 23.1717)},
+                {"to": Point(428.5677, 238.1267)},
+            ]
+        }
+
+        self.ident_to.append(Point(402.2956, 195.0549))
+        self.ident_from.append(Point(0., 0.))
+        self.ident_to.append(Point(475.0164, 239.2311))
+        self.ident_from.append(Point(85.0873, 0.))
 
     def test_transformation(self):
         """
@@ -83,13 +98,22 @@ class TransformationTestCase(unittest.TestCase):
             h2d.add_ident_pair(self.ident_from[i], self.ident_to[i])
 
         h2d.calculate()
-        logger.info(h2d.get_parameters())
-        new_points = h2d.transform(self.points_from)
+        logger.info(h2d)
+
+        self.assertAlmostEqual(self.correct_result["scale"], h2d.get_parameters()["scale"], places=4)
+        self.assertAlmostEqual(self.correct_result["rotation"], h2d.get_parameters()["rotation"], places=3)
+
+        pl = []
+        for p in self.correct_result["points"]["from"]:
+            pl.append(p)
+
+        new_points = h2d.transform(pl)
+
         p0 = new_points[0]
         p1 = p0["to"]
-        n = (self.points_to[0]+self.addition-p1).norm()
-        logger.info("diff: %.4f" % n)
-        self.assertTrue(n < 1e-3)
+        # n = (self.points_to[0]+self.addition-p1).norm()
+        # logger.info("diff: %.4f" % n)
+        # self.assertTrue(n < 1e-3)
 
 
 class ResectionTestCase(unittest.TestCase):

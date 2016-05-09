@@ -16,7 +16,7 @@ def rad2gon(angle):
     #     angle_gon -= 400
     # return corr_hz(angle_gon)
 
-    return corr_hz(angle * 200 / math.pi)
+    return angle * 200 / math.pi
 
 
 def gon2rad(angle):
