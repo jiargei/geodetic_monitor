@@ -34,12 +34,8 @@ class Resection(object):
     def calculate(self):
 
         assert self.can_calculate()
-        a2d = Adjustment2D()
-        a1d = Adjustment1D()
-
-        for ti in self.target_list:
-            a2d.add_target(ti)
-            a1d.add_target(ti)
+        a2d = Adjustment2D(target_list=self.target_list)
+        a1d = Adjustment1D(target_list=self.target_list)
 
         a2d.calculate()
         a1d.calculate()

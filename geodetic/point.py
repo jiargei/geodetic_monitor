@@ -47,10 +47,23 @@ class Point(object):
             return True
         return False
 
-    def as_array(self):
-        return np.array([[self.x],
-                         [self.y],
-                         [self.z]])
+    def as_array(self, dim=3):
+        assert dim in [1, 2, 3]
+        if dim == 3:
+            return np.array(
+                [[self.x],
+                 [self.y],
+                 [self.z]]
+            )
+        elif dim == 2:
+            return np.array(
+                [[self.x],
+                 [self.y]]
+            )
+        elif dim == 1:
+            return np.array(
+                [[self.z]]
+            )
 
     def set_coordinate(self, coordinate):
         """
@@ -178,11 +191,43 @@ class Point(object):
                 'z': self.z}
 
 
+class PointPair(object):
+    def __init__(self, p_from, p_to):
+        self.__pf = Point()
+        self.__pt = Point()
+        self.set_pair(p_from, p_to)
+
+    def set_pair(self, p_from, p_to):
+        assert isinstance(p_from, Point)
+        assert isinstance(p_to, Point)
+        self.__pf = p_from
+        self.__pt = p_to
+
+    def get_from(self):
+        """
+        :rtype: Point
+        """
+        return self.__pf
+
+    def get_to(self):
+        """
+        :rtype: Point
+        """
+        return self.__pt
+
+    def as_dict(self):
+        return {
+            "from": self.get_from(),
+            "to": self.get_to(),
+        }
+
+
 class MeasuredPoint(Point):
     """
 
     """
-    def __init__(self, x, y, z, station_name, target_name, horizontal_angle, vertical_angle, slope_distance):
+    def __init__(self, x, y, z, station_name, target_name, horizontal_angle, vertical_angle, slope_distance,
+                 target_height=0.):
         """
 
         Args:
@@ -200,6 +245,7 @@ class MeasuredPoint(Point):
         self.horizontal_angle = horizontal_angle
         self.vertical_angle = vertical_angle
         self.slope_distance = slope_distance
+        self.target_height = target_height
 
     def get_horizotal_distance(self):
         return self.slope_distance * np.sin(self.vertical_angle * np.pi / 200)

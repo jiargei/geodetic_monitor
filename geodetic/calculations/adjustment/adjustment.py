@@ -10,7 +10,7 @@ from geodetic.calculations import convert
 from geodetic.calculations.polar import grid_to_polar
 from geodetic.calculations.transformation import Helmert2DTransformation
 from geodetic.measurement import TachyMeasurement
-from geodetic.point import MeasuredPoint, Station
+from geodetic.point import MeasuredPoint, Station, PointPair, Point
 from normalgleichung import normalgleichung
 from . import design
 from .. adjustment.orientation import Orientation
@@ -35,8 +35,8 @@ class Adjustment(object):
         self.s02_post = 1.
         self.use_s02_post = True
         self.station = kwargs.get("station", Station())
-        self.target_list = []
-        self.iterations = kwargs.get("iterations", 20)
+        self.target_list = kwargs.get("target_list", [])
+        self.iterations = kwargs.get("iterations", 50)
         self.__a = None
         self.__l = None
 
@@ -57,8 +57,10 @@ class Adjustment(object):
 
         """
         assert self.can_calculate()
+        self.get_approximation()
         
         for iteration in range(self.iterations):
+            logger.info(self.station)
             self.clear_a()
             for ti in self.target_list:
                 ai = self.get_ai(ti)
@@ -117,6 +119,10 @@ class Adjustment(object):
         pass
 
     @abstractmethod
+    def __str__(self):
+        pass
+
+    @abstractmethod
     def is_relevant(self, xx):
         pass
 
@@ -152,6 +158,9 @@ class Adjustment1D(Adjustment):
     def __init__(self, **kwargs):
         super(Adjustment1D, self).__init__(**kwargs)
         self.sigma_vertical_angle = kwargs.get("sigma_vertical_angle", 10e-4)
+
+    def __str__(self):
+        return "Z: %.3f" % self.station.z
 
     def get_target_class(self):
         return MeasuredPoint
@@ -202,6 +211,9 @@ class Adjustment2D(Adjustment):
         self.sigma_slope_distance = kwargs.get("sigma_slope_distance", 3e-3)
         self.orientation = Orientation()
 
+    def __str__(self):
+        return "%.3f"
+
     def get_target_class(self):
         return MeasuredPoint
 
@@ -210,6 +222,7 @@ class Adjustment2D(Adjustment):
         self.station.y += xx[1]
         self.orientation.value += convert.rad2gon(xx[2])
         self.orientation.value = convert.corr_hz(angle=-1 * self.orientation.value)
+        self.station.ori = self.orientation.value
 
     def get_p(self):
         return scipy.eye(len(self.target_list)*2)
@@ -267,6 +280,84 @@ class Adjustment2D(Adjustment):
                float(xx[1]) >= 5e-4
 
 
+class Helmert2DAdjustment(Adjustment):
+    """
+
+    """
+    def __init__(self, **kwargs):
+        super(Helmert2DAdjustment, self).__init__(**kwargs)
+        self.station = Point()
+        self.rotation = 0.
+        self.scale = 0.
+
+    def __str__(self):
+        return str(Helmert2DTransformation(
+            translation=Point(self.station.x, self.station.y),
+            rotation=self.rotation,
+            scale=self.scale
+        ))
+
+    def get_target_class(self):
+        return PointPair
+
+    def add_xx(self, xx):
+        a = float(xx[0])
+        b = float(xx[1])
+        c = float(xx[2])
+        d = float(xx[3])
+
+        self.rotation += scipy.arctan2(d, c)
+        self.scale += scipy.sqrt(c ** 2 + d ** 2)
+        self.station += Point(a, b)
+
+    def calculate_post(self):
+        pass
+
+    def can_calculate(self):
+        return len(self.target_list) >= 2
+
+    def get_ai(self, t):
+        return design.design_helmert_2d(t.get_from())
+
+    def get_approximation(self):
+        assert self.can_calculate()
+        xs = 0.
+        ys = 0.
+        xf = []
+        yf = []
+        xt = []
+        yt = []
+        for t in self.target_list:
+            logger.debug("from: %s" % t.get_from())
+            logger.debug("to:   %s" % t.get_to())
+            xt.append(t.get_to().x)
+            yt.append(t.get_to().y)
+            xf.append(t.get_from().x)
+            yf.append(t.get_from().y)
+        xs = sum(xt)/len(xt) - sum(xf)/len(xf)
+        ys = sum(yt)/len(yt) - sum(yf)/len(yf)
+
+        self.station = Point(xs, ys)
+        self.scale = 1.
+        self.rotation = 0.
+
+    def get_li(self, t):
+        pm = t.get_to()
+        h2d = Helmert2DTransformation(translation=self.station,
+                                      rotation=self.rotation,
+                                      scale=self.scale)
+        pc = h2d.transform_point(t.get_from())
+        dp = pm - pc
+
+        return dp.as_array(dim=2)
+
+    def get_p(self):
+        return scipy.eye(len(self.target_list)*2)
+
+    def is_relevant(self, xx):
+        return xx[0] <= 3e-3 and xx[1] <= 3e-3 and xx[2] <= 10e-4 and xx[3] <= 1e-4
+
+
 class AdjustmentOld(object):
     """
 
@@ -275,7 +366,7 @@ class AdjustmentOld(object):
         self.__is_set = False
         self.station = station
         self.target_list = target_list
-        self.orientation = orientation
+        self.orientation = Orientation()
         self.sigma_horizontal_angle = 10e-4
         self.sigma_vertical_angle = 10e-4
         self.sigma_slope_distance = 3e-3

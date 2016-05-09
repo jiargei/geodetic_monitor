@@ -104,3 +104,17 @@ def design_1d(station, target):
 
     """
     return numpy.array([[dVdZ(station, target)]])
+
+
+def design_helmert_2d(p):
+    """
+
+    Args:
+        p: Point
+
+    Returns:
+
+    """
+    return numpy.array([[1., 0., p.x, -p.y],
+                        [0., 1., p.y, p.x]]
+                       )

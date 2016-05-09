@@ -58,7 +58,9 @@ def normalgleichung(A, P, l):
     :rtype: tuple(xx,vv,Qxx,Qll,Qlld,Qvv,s02p,Probe)
     :return: Ergebnisse des Ausgleichs nach kleinsten Quadraten
     """
-    # print A.shape, P.shape, l.shape
+    logger.debug(A.shape)
+    logger.debug(P.shape)
+    logger.debug(l.shape)
 
     AT = scipy.transpose(A)
     N = scipy.dot(scipy.dot(AT, P), A)
@@ -96,7 +98,7 @@ def normalgleichung(A, P, l):
         logger.warn("Not enough observations to solve")
         s02p = -9999.9999
     elif r == 0:
-        logger.warn("No redundancy given")
+        logger.debug("No redundancy given")
         s02p = 0.
     else:
         s02p = vTPv / r

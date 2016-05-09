@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod, abstractproperty
 
 import numpy as np
 
 from geodetic.calculations.adjustment.normalgleichung import normalgleichung
 from geodetic.calculations import polar
-from ..point import Point
+from ..point import Point, PointPair
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -20,8 +20,19 @@ class Transformation(object):
     """
     __metaclass__ = ABCMeta
 
-    def __init__(self):
-        self.__is_set = False
+    def __init__(self, **kwargs):
+        self.__is_set = True
+
+        for k in self.get_parameter_list():
+            if not k in kwargs:
+                logger.debug("Trafo Key '%s' not set" % k)
+                self.__is_set = False
+
+        if not self.get_parameter_list():
+            self.__is_set = False
+
+    def get_trafo_state(self):
+        return self.__is_set
 
     def calculate(self):
         """
@@ -47,11 +58,20 @@ class Transformation(object):
         lpl = []
         for p in point_list:
             assert isinstance(p, Point)
-            lpl.append({
-                "from": p,
-                "to": self.transform_point(p)
-            })
+            lpl.append(PointPair(
+                p_from=p,
+                p_to=self.transform_point(p),
+            ))
         return lpl
+
+    @abstractproperty
+    def get_parameter_list(self):
+        """
+
+        Returns: a list containing the trafo parameter attribute keys
+
+        """
+        return []
 
     @abstractmethod
     def __str__(self):
@@ -113,8 +133,8 @@ class Helmert2DTransformation(Transformation):
     """
 
     """
-    def __init__(self):
-        super(Helmert2DTransformation, self).__init__()
+    def __init__(self, **kwargs):
+        super(Helmert2DTransformation, self).__init__(**kwargs)
         self.__ident = {
             "from": [],
             "to": [],
@@ -122,13 +142,19 @@ class Helmert2DTransformation(Transformation):
         }
         self.__design_matrix = None
         self.__observation_vector = None
-        self.rotation = 0.
-        self.scale = 1.
-        self.translation = Point(0., 0., 0.)
+        self.rotation = kwargs.get("rotation", 0.)
+        self.scale = kwargs.get("scale", 1.)
+        p = kwargs.get("translation", Point())
+        assert isinstance(p, Point)
+        self.translation = p
         self.__addition = Point()
+        logger.debug("Set: %s" % self.get_trafo_state())
 
     def __str__(self):
-        return "Translation: %(translation)s, Z-Rotation: %(rotation).5f, Scale: %(scale).6f" % self.get_parameters()
+        return "Translation: %(translation)s, Z-Rotation: %(rotation)9.5f, Scale: %(scale)10.6f" % self.get_parameters()
+
+    def get_parameter_list(self):
+        return ["translation", "rotation", "scale"]
 
     def set_addition(self, x, y):
         self.__addition = Point(x, y)
@@ -139,7 +165,7 @@ class Helmert2DTransformation(Transformation):
         Returns:
 
         """
-        alpha = self.rotation * np.pi / 200.
+        alpha = self.rotation
         r = np.array([
             [np.cos(alpha), -np.sin(alpha), 0.],
             [np.sin(alpha), np.cos(alpha), 0.],
@@ -156,7 +182,7 @@ class Helmert2DTransformation(Transformation):
         Returns:
 
         """
-        assert self.__is_set
+        assert self.get_trafo_state()
         t = self.translation.as_array()
         logger.debug(t)
         s = self.scale
@@ -175,7 +201,7 @@ class Helmert2DTransformation(Transformation):
 
         Args:
             t: Translation
-            r: Rotation
+            r: Rotation in gon
             s: Scale
 
         :type t: Point
@@ -187,7 +213,7 @@ class Helmert2DTransformation(Transformation):
         """
         assert isinstance(t, Point)
         self.translation = t
-        self.rotation = r
+        self.rotation = polar.convert.gon2rad(r)
         self.scale = s
         self.__is_set = True
 
@@ -283,7 +309,7 @@ class Helmert2DTransformation(Transformation):
         c = float(xx[2])
         d = float(xx[3])
 
-        self.rotation = np.arctan2(d, c)
+        self.rotation = -np.arctan2(d, c)
         self.scale = np.sqrt(c ** 2 + d ** 2)
         self.translation = Point(a, b, 0.)
         self.__is_set = True
